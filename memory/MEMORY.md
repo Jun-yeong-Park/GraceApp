@@ -1,0 +1,2 @@
+- [User: Jay (Grace Church dev)](user_role.md) — solo dev, wants copy-paste deploy steps not abstract advice
+- [Project: Grace Church App](project_grace_church_app.md) — Expo RN + Supabase church app; Aug 2026 Apple 1.2 UGC rejection — **code done, deploy pending** (see APPLE_1_2_SUBMISSION.md)
