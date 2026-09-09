@@ -178,69 +178,90 @@ Copy-paste this into App Store Connect → Resolution Center reply. Update the v
 ```
 Dear App Review Team,
 
-Thank you for the feedback on Guideline 1.2. We have implemented all four required
-user-generated content mechanisms and are re-submitting for review.
+Thank you for the additional feedback on Guideline 1.2. All required precautions
+are implemented. Because the controls were not located during the previous
+review, we have made them more prominent and are listing exactly where each one
+appears.
 
-1. EULA / Terms of Use with zero-tolerance for objectionable content
-   - New users must agree to the EULA before signup completes. The Agree button is
-     disabled until the checkbox is ticked (see Video A).
-   - The EULA (Section 2) explicitly states: "The App applies a strict Zero
-     Tolerance policy toward objectionable content and abusive behavior..."
-   - Existing users are shown a non-dismissible re-consent modal on next launch.
-   - Acceptance is recorded per-user with a timestamp and version in the
-     `profiles.eula_accepted_at` and `profiles.eula_version` columns.
+IMPORTANT — please sign in with the MEMBER account:
 
-2. Content filtering
-   - Client-side profanity/hate-speech filter runs before any post, photo,
-     comment, or chat message is sent (English + Korean + Spanish word lists).
-   - Server-side Postgres trigger re-validates every insert as a defense-in-depth
-     measure (`reject_blocked_content` trigger on 5 UGC tables).
+    member@gracechurch.app / gracemember2026
 
-3. Reporting mechanism (see Video B)
-   - Every post (in both the feed and the post detail screen), photo, comment,
-     and chat message has a visible "…" menu with a 🚨 Report option
-     (6 categorized reasons). Prayer requests are never shown to other members —
-     they are visible only to church administrators, who can delete them.
-   - The community section requires sign-in, so every person who can see
-     user-generated content has already accepted the EULA and has the report
-     and block controls available.
-   - Reports are stored in the `content_reports` table and trigger an immediate
-     email to the developer via a Supabase Edge Function.
-   - The in-app UI promises action within 24 hours per Apple's requirement.
+The app shows a delete control on content you wrote yourself and a report/block
+control on content written by others. The pastor account authored most of the
+community content, so the report and block controls are only visible from the
+member account above. A pastor account is also provided at the end for the
+moderation dashboard.
 
-4. Blocking mechanism (see Video C)
-   - Every user's content has a "…" menu with 🚫 Block user.
-   - Blocking is immediate: the user's posts, photos, comments, and chat messages
-     disappear from the blocker's feed without app restart.
-   - Per Apple's requirement, blocking also generates an automatic report and
-     sends a notification email to the developer.
-   - Users can review and revoke their blocks via More -> Account ->
-     "Manage Blocked Users" (scroll to the bottom of the More tab).
+WHERE TO FIND EACH REQUIRED MECHANISM
 
-5. Admin moderation
-   - Pastors have an in-app moderation dashboard (More -> Admin Dashboard ->
-     "Moderation" tab) to review pending reports, delete offending content,
-     and ban users.
-   - Banned users are immediately signed out on next auth check and are blocked
-     from inserting new posts/comments/messages by both application logic and
-     Supabase RLS policies.
+1. EULA with a zero-tolerance clause, shown before registering or signing in
+   - Launch the app signed out and tap the "Comm." tab. Community content is not
+     viewable until you sign in; the screen states our zero-tolerance policy and
+     links to the full Terms of Use.
+   - Tap "View Terms of Use" to read the full EULA. Section 2 is titled
+     "Zero Tolerance for Objectionable Content" and lists the prohibited
+     categories.
+   - On the Sign In tab, the terms notice appears directly under the password
+     field. On the Sign Up tab, the Sign Up button stays disabled until the
+     "I agree to the Terms of Use and Privacy Policy" checkbox is ticked.
+   - Existing users are shown a non-dismissible re-consent modal on their next
+     sign-in. Acceptance is stored per user with a timestamp and version.
+   (Video A)
 
-Please sign in with the MEMBER account below to see the report and block
-controls. The pastor account authored most of the community content, and the
-app shows a delete control (not a report control) on your own content, so the
-report menu is only visible from a member account.
+2. Filtering of objectionable content
+   - A profanity and hate-speech filter (English, Korean, Spanish) runs in the
+     app before any post, photo, comment, or chat message is submitted.
+   - A Postgres trigger re-validates every insert on the server, so the filter
+     cannot be bypassed by a modified client.
 
-  Member account (use for reporting / blocking):
-      member@gracechurch.app / gracemember2026
-  Pastor account (moderation dashboard: Admin -> Moderation):
-      reviewer@gracechurch.app / GraceReview2026!
+3. Flagging objectionable content
+   Sign in as the member account, open "Comm." -> "Kosovo Community" and scroll
+   to a post by "Pastor Reviewer". A "..." control appears in four places:
+     a) top-right of each post card in the feed
+     b) top-right of the navigation bar when the post is opened
+     c) next to each comment
+     d) next to each incoming message in the community chat (the speech-bubble
+        icon in the community header)
+   Tapping "..." opens Report and Block. Report offers six categorized reasons
+   and confirms that we act within 24 hours. Each report is stored server-side
+   and immediately emails our moderation address so it can be actioned within
+   24 hours.
+   (Video B)
 
-Screen recordings:
-   Video A (EULA): <upload link>
-   Video B (Report): <upload link>
-   Video C (Block): <upload link>
+4. Blocking abusive users
+   - The same "..." menu contains "Block user".
+   - Blocking takes effect immediately: that user's posts, photos, comments and
+     chat messages disappear from your feed with no refresh or restart.
+   - Blocking also files an automatic report and sends a notification email to
+     the developer, as required.
+   - Blocks can be reviewed and revoked at More -> scroll to the bottom ->
+     ACCOUNT -> "Manage Blocked Users".
+   (Video C)
 
-Please let us know if you need anything else.
+5. Acting on reports within 24 hours
+   - Every report and block sends an email to our moderation address the moment
+     it is filed.
+   - Signing in with the pastor account below and opening More -> Admin
+     Dashboard -> "Moderation" shows pending reports with a count badge, and
+     allows marking reviewed, deleting the reported content, and banning the
+     author.
+   - A banned user is signed out at the next auth check and is prevented from
+     posting by database-level security policies, not only by app logic.
+
+Screen recordings (captured on a physical iPhone):
+   Video A - Terms of use before sign-in:  <upload link>
+   Video B - Reporting objectionable content: <upload link>
+   Video C - Blocking a user, content removed instantly: <upload link>
+
+Accounts:
+   Member (use this one for reporting and blocking):
+       member@gracechurch.app / gracemember2026
+   Pastor (moderation dashboard):
+       reviewer@gracechurch.app / GraceReview2026!
+
+Please let us know if anything is still unclear and we will provide whatever
+additional detail you need.
 
 Sincerely,
 Grace Church App team
