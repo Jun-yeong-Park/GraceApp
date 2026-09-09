@@ -167,6 +167,21 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
     (c) => !(c.author_id && blockedIds.has(c.author_id)) && !hiddenIds.has(c.id)
   );
 
+  // 게시글 자체 신고/차단 (Apple 1.2 — 상세 화면에서도 신고 수단 노출)
+  function moderatePost() {
+    if (!user) { Alert.alert('', lu('loginToComment', lang)); return; }
+    showModerationMenu({
+      lang: lng,
+      reporterId: user.id,
+      targetUserId: post.author_id ?? null,
+      targetUserName: post.author_name,
+      contentType: 'post',
+      contentId: post.id,
+      onBlocked: () => navigation.goBack(),
+      onHidden: () => navigation.goBack(),
+    });
+  }
+
   function moderateComment(comment: Comment) {
     if (!user) { Alert.alert('', lu('loginToComment', lang)); return; }
     if (comment.author_id === user.id) return; // 본인 댓글은 관리 메뉴 미표시
@@ -183,6 +198,7 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
   }
 
   const photos = post.photo_urls ?? [];
+  const isMyPost = !!user && post.author_id === user.id;
 
   // 게시글을 헤더 컴포넌트로 사용
   const PostContent = (
@@ -246,7 +262,13 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
           <Text style={styles.backArrow}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{post.title}</Text>
-        <View style={styles.backBtn} />
+        {isMyPost ? (
+          <View style={styles.backBtn} />
+        ) : (
+          <TouchableOpacity onPress={moderatePost} style={styles.backBtn} hitSlop={8}>
+            <Text style={styles.headerMore}>⋯</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
@@ -348,6 +370,7 @@ const styles = StyleSheet.create({
   backBtn: { width: 36, alignItems: 'center' },
   backArrow: { fontSize: 30, color: Colors.white, lineHeight: 32 },
   headerTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: Colors.white, textAlign: 'center' },
+  headerMore: { fontSize: 26, color: Colors.white, lineHeight: 30, fontWeight: '700' },
 
   listContent: { paddingBottom: 16 },
 

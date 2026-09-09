@@ -12,6 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CommunityTabStackParamList } from "../types";
 import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 
 type Props = NativeStackScreenProps<CommunityTabStackParamList, 'CommunityMain'>;
@@ -75,6 +76,18 @@ export const COMMUNITIES = [
   },
 ];
 
+// 로그인 게이트 문구 (App Store Guideline 1.2 — UGC 열람 전 EULA 동의 보장)
+const GATE = {
+  title:  { ko: '커뮤니티는 로그인 후 이용할 수 있습니다',
+            en: 'Sign in to view the community',
+            es: 'Inicia sesión para ver la comunidad' },
+  body:   { ko: '교인 간 게시물·사진·채팅을 안전하게 운영하기 위해 로그인이 필요합니다.\n\n부적절한 콘텐츠와 학대 행위에는 무관용 원칙이 적용되며, 신고된 콘텐츠는 24시간 내에 검토·삭제됩니다.',
+            en: 'Sign-in is required so posts, photos, and chat stay safe for everyone.\n\nWe have zero tolerance for objectionable content and abusive users. Reported content is reviewed and removed within 24 hours.',
+            es: 'Se requiere iniciar sesión para mantener seguras las publicaciones, fotos y chats.\n\nTenemos tolerancia cero con el contenido objetable y los usuarios abusivos. El contenido reportado se revisa y elimina en 24 horas.' },
+  button: { ko: '로그인 / 회원가입', en: 'Sign In / Sign Up', es: 'Entrar / Registrarse' },
+  terms:  { ko: '이용약관 보기', en: 'View Terms of Use', es: 'Ver Términos de Uso' },
+};
+
 export type CommunityItem = typeof COMMUNITIES[0];
 
 export function getCommunityName(c: CommunityItem, lang: string) {
@@ -83,10 +96,25 @@ export function getCommunityName(c: CommunityItem, lang: string) {
 
 export default function CommunityScreen({ navigation }: Props) {
   const { t, lang } = useLanguage();
+  const { user } = useAuth();
   const [postCounts, setPostCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const g: 'ko' | 'en' | 'es' = lang === 'ko' ? 'ko' : lang === 'es' ? 'es' : 'en';
+
+  // 더보기 탭의 로그인 모달을 연다 (인증 UI 는 MoreScreen 한 곳에만 존재)
+  function goToLogin() {
+    (navigation.getParent() as any)?.navigate('More', {
+      screen: 'MoreMain',
+      params: { openLogin: true },
+    });
+  }
+
+  function goToTerms() {
+    (navigation.getParent() as any)?.navigate('More', { screen: 'Eula' });
+  }
 
   useEffect(() => {
+    if (!user) { setLoading(false); return; }
     supabase
       .from('community_posts')
       .select('community_id')
@@ -100,7 +128,7 @@ export default function CommunityScreen({ navigation }: Props) {
         }
         setLoading(false);
       }, () => setLoading(false));
-  }, []);
+  }, [user]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -113,6 +141,20 @@ export default function CommunityScreen({ navigation }: Props) {
         <View style={styles.backBtn} />
       </View>
 
+      {!user ? (
+        /* ── 로그인 게이트 (App Store Guideline 1.2) ── */
+        <View style={styles.gateWrap}>
+          <Text style={styles.gateEmoji}>🔒</Text>
+          <Text style={styles.gateTitle}>{GATE.title[g]}</Text>
+          <Text style={styles.gateBody}>{GATE.body[g]}</Text>
+          <TouchableOpacity style={styles.gateBtn} onPress={goToLogin} activeOpacity={0.85}>
+            <Text style={styles.gateBtnText}>{GATE.button[g]}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={goToTerms} hitSlop={8}>
+            <Text style={styles.gateTermsLink}>{GATE.terms[g]}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
       <FlatList
         data={COMMUNITIES}
         keyExtractor={(item) => item.id}
@@ -161,6 +203,7 @@ export default function CommunityScreen({ navigation }: Props) {
           loading ? <ActivityIndicator color={Colors.primary} style={{ marginTop: 20 }} /> : null
         }
       />
+      )}
     </SafeAreaView>
   );
 }
@@ -196,6 +239,44 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: Colors.primary,
+  },
+
+  // 로그인 게이트
+  gateWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingBottom: 110,
+  },
+  gateEmoji: { fontSize: 44, marginBottom: 16 },
+  gateTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.text.primary,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  gateBody: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 21,
+    marginBottom: 28,
+  },
+  gateBtn: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  gateBtnText: { color: Colors.white, fontSize: 15, fontWeight: '800' },
+  gateTermsLink: {
+    fontSize: 13,
+    color: Colors.primary,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 
   // 리스트

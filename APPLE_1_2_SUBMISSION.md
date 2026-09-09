@@ -28,7 +28,7 @@ Prepared 2026-08-19 — implements EULA re-consent, content filtering, report, b
 ```bash
 brew install supabase/tap/supabase
 supabase login
-cd /Users/jay/GraceApp/grace-church-app
+cd /Users/jay/develop/GraceApp/grace-church-app
 supabase link --project-ref epgwwsixhgdagavnurog
 ```
 
@@ -48,26 +48,58 @@ supabase functions deploy notify-block  --no-verify-jwt
 Copy the two function URLs from the output — they look like:
 `https://epgwwsixhgdagavnurog.supabase.co/functions/v1/notify-report`
 
-### Step 6. Wire the Database Webhooks
+### Step 6. Wire the moderation webhooks
 
-For **notify-report**:
-1. Dashboard → **Database → Webhooks** → **Create a new hook**
-2. Name: `notify-report`
-3. Table: `content_reports`
-4. Events: check only **Insert**
-5. Type: **HTTP Request**
-6. Method: **POST**
-7. URL: paste the `notify-report` function URL from Step 5
-8. HTTP Headers: leave default (`Content-Type: application/json`)
-9. Click **Create webhook**
+Run `supabase_moderation_webhooks.sql` in the SQL Editor. It enables `pg_net` and
+adds two AFTER INSERT triggers (`notify_report_on_insert` on `content_reports`,
+`notify_block_on_insert` on `blocked_users`) that POST to the Edge Functions.
 
-Repeat for **notify-block**:
-- Name: `notify-block`
-- Table: `blocked_users`
-- Events: **Insert**
-- URL: `notify-block` function URL
+Do **not** use Dashboard → Database → Webhooks for this. That UI writes to the
+`supabase_functions` schema, which does not exist until webhooks have been enabled
+from the Dashboard at least once — on this project it is absent, and the UI itself
+404s under Integrations. The SQL file sends the identical payload shape and pins
+the event to INSERT only.
+
+Verify:
+
+```sql
+select tgname, tgrelid::regclass as table_name
+from pg_trigger
+where tgname in ('notify_report_on_insert','notify_block_on_insert');
+```
+
+Expect two rows: `content_reports` and `blocked_users`.
 
 ### Step 7. Smoke test (before submitting to Apple)
+
+**7a — SQL-only test (fastest; no build needed).** In the SQL Editor:
+
+```sql
+-- profanity filter must not block ordinary sentences
+select
+  public.contains_blocked_words('예수님이 우리를 위해 죽어 주셨습니다') as must_be_false,
+  public.contains_blocked_words('시발')                                as must_be_true;
+
+-- fire the report webhook
+insert into public.content_reports
+  (reporter_id, content_type, content_id, reported_user_id, reason, status)
+select id, 'post', gen_random_uuid(), id, 'smoke_test', 'pending'
+from auth.users limit 1;
+
+-- wait ~10s, then read what pg_net got back
+select id, status_code, left(content, 400) as response_body, created
+from net._http_response order by created desc limit 5;
+
+-- clean up
+delete from public.content_reports where reason = 'smoke_test';
+```
+
+`status_code = 200` means the Edge Function ran and Resend accepted the email.
+`500 RESEND_API_KEY not set` → secret missing. `401/403` → stale Resend key.
+`422` → Resend refused the recipient (the sandbox sender only delivers to the
+address that owns the Resend account, i.e. junyeongpark96@gmail.com).
+
+**7b — In-app test.**
 
 1. In the app, sign in with the reviewer demo account
 2. Post a test comment, then report it via the "…" menu on someone else's post
@@ -75,7 +107,8 @@ Repeat for **notify-block**:
 4. Block a test user → you should get a `🚫 [Grace Church] User block event` email
 5. Sign in as `reviewer@gracechurch.app` (pastor) → **Admin → 신고관리** tab should show the pending report; try "검토완료", "콘텐츠 삭제", "유저정지"
 
-If a step fails, check **Dashboard → Edge Functions → Logs** and **Database → Webhooks → recent deliveries**.
+If a step fails, check **Dashboard → Edge Functions → Logs** and the
+`net._http_response` table above.
 
 ---
 
@@ -83,6 +116,9 @@ If a step fails, check **Dashboard → Edge Functions → Logs** and **Database 
 
 Before creating a build, walk through these in the actual app on a real device:
 
+- [ ] **Community sign-in gate**: signed out → tap **Comm.** tab → lock screen appears with the zero-tolerance summary, "Sign In / Sign Up" button, and "View Terms of Use" link. No user-generated content is reachable while signed out.
+- [ ] **Report from post detail**: open a post authored by someone else → a **"…"** button is visible in the top-right of the header → tapping it opens Report / Block.
+- [ ] **Report from chat**: each message from another member shows a visible **"…"** next to the timestamp (no long-press required).
 - [ ] **New signup flow**: Signup modal → EULA checkbox is required → button disabled without check → after signup, `profiles.eula_version = 1` and `eula_accepted_at` set (verify in SQL editor)
 - [ ] **Existing user re-consent**: Manually run `UPDATE profiles SET eula_version = 0 WHERE email='member@gracechurch.app';` then sign in — a non-dismissible EULA modal appears with the zero-tolerance summary + Agree/Do-not-agree buttons. Clicking Agree updates `eula_version` back to 1 and closes the modal.
 - [ ] **Client-side profanity filter**: try posting "fuck test" → blocked with alert.
@@ -102,19 +138,25 @@ Record **three separate short videos** (30–60 sec each). Upload with your repl
 ### Video A — EULA at signup (Apple requirement: agreement before UGC access)
 
 1. Open the app fresh (or sign out first)
-2. Tap **More** tab → **Sign In / Sign Up**
-3. Switch to **Sign Up** tab
-4. Fill Name, Email, Password, Confirm
-5. **Show the EULA checkbox** with the zero-tolerance clause visible
-6. **Tap the "Terms of Use" link** — the full EULA screen opens with Section 2 "Zero Tolerance for Objectionable Content" visible → go back
-7. Show that the **Sign Up button is disabled** until the checkbox is ticked
-8. Tick the checkbox → tap Sign Up → success
+2. Tap the **Comm.** tab → show the sign-in gate: community content is not
+   viewable until the user signs in and accepts the terms. Tap **View Terms of
+   Use** to show the full EULA, then go back.
+3. Tap **Sign In / Sign Up** on that gate (or the **More** tab → **Sign In / Sign Up**)
+4. On the **Sign In** tab, show the terms notice under the password field
+   ("By signing in you agree to the Terms of Use and Privacy Policy…")
+5. Switch to **Sign Up** tab
+6. Fill Name, Email, Password, Confirm
+7. **Show the EULA checkbox** with the zero-tolerance clause visible
+8. **Tap the "Terms of Use" link** — the full EULA screen opens with Section 2 "Zero Tolerance for Objectionable Content" visible → go back
+9. Show that the **Sign Up button is disabled** until the checkbox is ticked
+10. Tick the checkbox → tap Sign Up → success
 
 ### Video B — Report flow
 
 1. Signed in as demo member, open the **Comm.** tab
 2. Open any community → open a post authored by someone else
-3. Tap the **"…" menu** on a post/comment
+3. Tap the **"…" button in the top-right of the post detail header**
+   (also show the "…" on the post card in the feed and on a comment)
 4. Show the sheet with **🚨 신고하기 / Report** and **🚫 사용자 차단 / Block user** options
 5. Tap Report → show the 6 reason choices → pick one
 6. Show the success alert: "신고가 접수되었습니다. 24시간 내에 검토 후 조치됩니다."
@@ -155,8 +197,13 @@ user-generated content mechanisms and are re-submitting for review.
      measure (`reject_blocked_content` trigger on 5 UGC tables).
 
 3. Reporting mechanism (see Video B)
-   - Every post, photo, comment, chat message, and prayer request has a "…" menu
-     with a 🚨 Report option (6 categorized reasons).
+   - Every post (in both the feed and the post detail screen), photo, comment,
+     and chat message has a visible "…" menu with a 🚨 Report option
+     (6 categorized reasons). Prayer requests are never shown to other members —
+     they are visible only to church administrators, who can delete them.
+   - The community section requires sign-in, so every person who can see
+     user-generated content has already accepted the EULA and has the report
+     and block controls available.
    - Reports are stored in the `content_reports` table and trigger an immediate
      email to the developer via a Supabase Edge Function.
    - The in-app UI promises action within 24 hours per Apple's requirement.

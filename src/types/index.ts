@@ -106,7 +106,7 @@ export interface Member {
 }
 
 export type MoreTabParamList = {
-  MoreMain: undefined;
+  MoreMain: { openLogin?: boolean } | undefined;
   Admin: undefined;
   Directory: undefined;
   MemberDetail: { member: Member };

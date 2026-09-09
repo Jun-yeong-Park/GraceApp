@@ -5,16 +5,22 @@ import { supabase } from '../services/supabase';
 export type ContentType = 'post' | 'photo' | 'comment' | 'message' | 'prayer';
 
 // 차단/검열 키워드 (욕설·혐오·성적 표현 — 영/한/스 공통, 가벼운 워드 리스트)
+// 부분 문자열 매칭이므로 평범한 문장 안에 나올 수 있는 조각은 넣지 말 것.
+// (예: '죽어' → "죽어 주셨다", '좇' → "주를 좇아", '보지' → "보지 못했다",
+//  '자지' → "자지 않고", '꺼져' → "불이 꺼져", 'rape' → "grape")
+// 서버 쪽 목록(supabase_apple_1_2_compliance.sql 의 contains_blocked_words)과 동일하게 유지.
 const BLOCKED_WORDS: string[] = [
   // EN
-  'fuck', 'fucker', 'fucking', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'pussy',
-  'nigger', 'nigga', 'faggot', 'retard', 'whore', 'slut', 'rape', 'pedo',
+  'fuck', 'fucker', 'fucking', 'shit', 'bitch', 'asshole', 'cunt', 'pussy',
+  'nigger', 'nigga', 'faggot', 'retard', 'whore', 'slut', 'porn',
   // KO
-  '시발', '씨발', '씨팔', '시팔', 'ㅅㅂ', '병신', 'ㅄ', 'ㅂㅅ', '존나', '좆', '개새끼', '새끼야',
-  '미친년', '미친놈', '꺼져', '죽어', '쳐죽', '엿먹', '닥쳐',
+  '시발', '씨발', '씨팔', '시팔', 'ㅅㅂ', 'ㅆㅂ', '병신', 'ㅄ', 'ㅂㅅ', '존나', '좆', '조까',
+  '개새끼', '새끼야', '미친년', '미친놈', '쳐죽', '엿먹', '닥쳐', '뒤져라', '디져라',
+  '창녀', '창놈', '섹스', 'fuckyou', 'tlqkf',
+  '느금마', '니미', '니애미', '씹새', '씹년', '씹할', '씹새끼', '좆같', '좆까',
   // ES
   'mierda', 'puta', 'puto', 'cabron', 'cabrón', 'pendejo', 'coño', 'joder',
-  'maricon', 'maricón', 'verga',
+  'maricon', 'maricón', 'verga', 'chinga', 'pinche',
 ];
 
 const REPORT_REASONS: { key: string; label: { ko: string; en: string; es: string } }[] = [

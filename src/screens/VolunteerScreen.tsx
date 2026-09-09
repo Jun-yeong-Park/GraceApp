@@ -20,6 +20,7 @@ import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import { checkContentFilter } from '../utils/moderation';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Volunteer'>;
 
@@ -65,6 +66,7 @@ interface RoleForm {
 
 export default function VolunteerScreen({ navigation }: Props) {
   const { t, lang } = useLanguage();
+  const lng: 'ko' | 'en' | 'es' = lang === 'ko' ? 'ko' : lang === 'es' ? 'es' : 'en';
   const { isAdmin } = useAuth();
 
   const [posts, setPosts] = useState<VolunteerPost[]>([]);
@@ -117,6 +119,7 @@ export default function VolunteerScreen({ navigation }: Props) {
       Alert.alert(t('volunteerErrorTitle'), t('volunteerNameError'));
       return;
     }
+    if (checkContentFilter(applicantName, lng)) return;
     setPosts(prev => prev.map(post => {
       if (post.id !== modalPost?.id) return post;
       return {

@@ -103,16 +103,21 @@ RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
 DECLARE
   lower_txt TEXT := lower(COALESCE(txt, ''));
   bad TEXT;
+  -- NOTE: this is a plain substring match, so every entry must be a string that
+  -- cannot appear inside an ordinary sentence. Do NOT add short fragments like
+  -- '죽어' ("죽어 주셨다"), '좇' ("주를 좇아"), '보지' ("보지 못했다"),
+  -- '자지' ("자지 않고"), '꺼져' ("불이 꺼져"), '씹' ("씹다"), 'rape' ("grape")
+  -- or '한남' ("한남동") — they block legitimate posts. Keep the client list in
+  -- src/utils/moderation.ts in sync with this one.
   bad_words TEXT[] := ARRAY[
     -- EN
-    'fuck','fucker','fucking','shit','bitch','asshole','cunt','dick','pussy',
-    'nigger','nigga','faggot','retard','whore','slut','rape','pedo','porn',
-    -- KO (expanded — common variants + leetspeak)
-    '시발','씨발','씨팔','시팔','ㅅㅂ','병신','ㅄ','ㅂㅅ','존나','좆','조까',
-    '개새끼','새끼야','미친년','미친놈','꺼져','죽어','쳐죽','엿먹','닥쳐',
-    '보지','자지','창녀','창놈','섹스','fuck야','ㅆㅂ','ㅗ','fuckyou',
-    '느금마','니미','니애미','씹','씹새','씹년','씹할','좆같','좆까','좇','tlqkf',
-    '노무현','일베','한남충','김치녀','한남','메갈','꼴페','좌빨','수꼴',
+    'fuck','fucker','fucking','shit','bitch','asshole','cunt','pussy',
+    'nigger','nigga','faggot','retard','whore','slut','porn',
+    -- KO
+    '시발','씨발','씨팔','시팔','ㅅㅂ','ㅆㅂ','병신','ㅄ','ㅂㅅ','존나','좆','조까',
+    '개새끼','새끼야','미친년','미친놈','쳐죽','엿먹','닥쳐','뒤져라','디져라',
+    '창녀','창놈','섹스','fuckyou','tlqkf',
+    '느금마','니미','니애미','씹새','씹년','씹할','씹새끼','좆같','좆까',
     -- ES
     'mierda','puta','puto','cabron','cabrón','pendejo','coño','joder',
     'maricon','maricón','verga','chinga','pinche'

@@ -107,7 +107,7 @@ function lu(key: keyof typeof UI, l: L): string {
   return UI[key]?.[l] ?? UI[key]?.ko ?? '';
 }
 
-export default function MoreScreen({ navigation }: Props) {
+export default function MoreScreen({ navigation, route }: Props) {
   const { lang, setLang } = useLanguage();
   const { user, role, isPastor, displayName, refreshRole, signIn, signUp, signOut } = useAuth();
   const l: L = lang === 'ko' ? 'ko' : lang === 'es' ? 'es' : 'en';
@@ -134,6 +134,14 @@ export default function MoreScreen({ navigation }: Props) {
     setEmail(''); setPassword(''); setName(''); setConfirm(''); setEulaAgreed(false);
     setLoginModal(false);
   }
+
+  // 다른 탭(커뮤니티 로그인 게이트)에서 openLogin 파라미터로 넘어온 경우 로그인 모달 자동 오픈
+  useEffect(() => {
+    if (route.params?.openLogin && !user) {
+      openLogin('login');
+      navigation.setParams({ openLogin: undefined });
+    }
+  }, [route.params?.openLogin, user]);
 
   async function handleLogin() {
     if (!email.trim() || !password) return;
@@ -551,6 +559,8 @@ export default function MoreScreen({ navigation }: Props) {
                 eulaLink:  { ko: '이용약관',        en: 'Terms of Use',      es: 'Términos de Uso' },
                 eulaMid:   { ko: ' 및 ',            en: ' and ',             es: ' y ' },
                 privLink:  { ko: '개인정보처리방침', en: 'Privacy Policy',   es: 'Política de Privacidad' },
+                signInPre: { ko: '로그인하면 ', en: 'By signing in you agree to the ', es: 'Al iniciar sesión aceptas los ' },
+                signInPost:{ ko: '에 동의하는 것이 됩니다. 부적절한 콘텐츠 및 학대 행위는 무관용 원칙으로 24시간 내 조치됩니다.', en: '. Objectionable content & abuse: zero tolerance, acted on within 24 hours.', es: '. Contenido inapropiado y abuso: tolerancia cero, acción en 24 horas.' },
                 eulaPost:  { ko: '에 동의합니다. 부적절한 콘텐츠 및 학대 행위는 무관용 원칙으로 24시간 내 조치됩니다.', en: '. Objectionable content & abuse: zero tolerance, acted on within 24 hours.', es: '. Contenido inapropiado y abuso: tolerancia cero, acción en 24 horas.' },
               };
               return (
@@ -589,6 +599,25 @@ export default function MoreScreen({ navigation }: Props) {
                         placeholderTextColor={Colors.text.light}
                         value={password} onChangeText={setPassword} secureTextEntry
                       />
+                      {/* ── 로그인 전 약관 고지 (App Store Guideline 1.2) ── */}
+                      <Text style={styles.signInTerms}>
+                        {F.signInPre[l]}
+                        <Text
+                          style={styles.eulaLink}
+                          onPress={() => { setLoginModal(false); navigation.navigate('Eula'); }}
+                        >
+                          {F.eulaLink[l]}
+                        </Text>
+                        {F.eulaMid[l]}
+                        <Text
+                          style={styles.eulaLink}
+                          onPress={() => { setLoginModal(false); navigation.navigate('PrivacyPolicy'); }}
+                        >
+                          {F.privLink[l]}
+                        </Text>
+                        {F.signInPost[l]}
+                      </Text>
+
                       <View style={styles.authBtns}>
                         <TouchableOpacity style={styles.cancelBtn} onPress={closeLogin}>
                           <Text style={styles.cancelBtnText}>{lu('cancel', l)}</Text>
@@ -901,4 +930,5 @@ const styles = StyleSheet.create({
   eulaCheckmark: { color: Colors.white, fontSize: 14, fontWeight: '800' },
   eulaText: { flex: 1, fontSize: 12, color: Colors.text.secondary, lineHeight: 18 },
   eulaLink: { color: Colors.primary, fontWeight: '700', textDecorationLine: 'underline' },
+  signInTerms: { fontSize: 12, color: Colors.text.secondary, lineHeight: 18, marginTop: 4, marginBottom: 12 },
 });

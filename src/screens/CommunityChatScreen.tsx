@@ -281,9 +281,14 @@ export default function CommunityChatScreen({ navigation, route }: Props) {
                             {item.content}
                           </Text>
                         </TouchableOpacity>
-                        {/* 상대 타임스탬프 (오른쪽) */}
+                        {/* 상대 타임스탬프 + 신고 버튼 (오른쪽) */}
                         {!isMe && (
-                          <Text style={styles.msgTime}>{formatTime(item.created_at, lang)}</Text>
+                          <>
+                            <Text style={styles.msgTime}>{formatTime(item.created_at, lang)}</Text>
+                            <TouchableOpacity onPress={() => moderateMessage(item)} hitSlop={10} style={styles.msgMoreBtn}>
+                              <Text style={styles.msgMoreText}>⋯</Text>
+                            </TouchableOpacity>
+                          </>
                         )}
                       </View>
                     </View>
@@ -426,6 +431,8 @@ const styles = StyleSheet.create({
     color: Colors.text.light,
     marginBottom: 2,
   },
+  msgMoreBtn: { paddingHorizontal: 4, marginBottom: 2 },
+  msgMoreText: { fontSize: 16, color: Colors.text.light, fontWeight: '700', lineHeight: 18 },
 
   inputBar: {
     flexDirection: 'row',
