@@ -267,6 +267,26 @@ END;
 $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
+-- F2. blocked_users.blocked_id must reference public.profiles, not auth.users
+--
+--     The "Manage Blocked Users" screen reads:
+--         .select('id, blocked_id, created_at, profiles:blocked_id(full_name)')
+--     PostgREST resolves that embed through the foreign key on blocked_id. The
+--     original schema pointed it at auth.users, which is not exposed to
+--     PostgREST, so the request failed and the screen rendered an empty list —
+--     i.e. the unblock UI Apple requires did not work at all.
+--
+--     profiles.id itself references auth.users(id) ON DELETE CASCADE, so
+--     re-pointing this FK keeps the same delete behaviour.
+-- ────────────────────────────────────────────────────────────────────────────
+alter table public.blocked_users
+  drop constraint if exists blocked_users_blocked_id_fkey;
+
+alter table public.blocked_users
+  add constraint blocked_users_blocked_id_fkey
+  foreign key (blocked_id) references public.profiles(id) on delete cascade;
+
+-- ────────────────────────────────────────────────────────────────────────────
 -- G. Admin view — pending reports enriched with content + reporter info
 --    (Simplifies the moderation UI query)
 -- ────────────────────────────────────────────────────────────────────────────

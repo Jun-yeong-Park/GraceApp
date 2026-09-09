@@ -414,10 +414,13 @@ CREATE POLICY "report_admin_all"   ON public.content_reports FOR ALL USING (
 -- ────────────────────────────────────────────────────────────────────────────
 -- 17. blocked_users
 -- ────────────────────────────────────────────────────────────────────────────
+-- blocked_id references profiles (NOT auth.users) so PostgREST can embed the
+-- blocked user's name in the "Manage Blocked Users" screen. See section F2 of
+-- supabase_apple_1_2_compliance.sql.
 CREATE TABLE IF NOT EXISTS public.blocked_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   blocker_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  blocked_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  blocked_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (blocker_id, blocked_id)
 );
