@@ -223,8 +223,15 @@ user-generated content mechanisms and are re-submitting for review.
      from inserting new posts/comments/messages by both application logic and
      Supabase RLS policies.
 
-Demo account: reviewer@gracechurch.app / GraceReview2026!  (pastor / admin role)
-Member account: member@gracechurch.app / GraceMember2026!
+Please sign in with the MEMBER account below to see the report and block
+controls. The pastor account authored most of the community content, and the
+app shows a delete control (not a report control) on your own content, so the
+report menu is only visible from a member account.
+
+  Member account (use for reporting / blocking):
+      member@gracechurch.app / gracemember2026
+  Pastor account (moderation dashboard: Admin -> Moderation):
+      reviewer@gracechurch.app / GraceReview2026!
 
 Screen recordings:
    Video A (EULA): <upload link>
