@@ -22,13 +22,52 @@ Apple re-rejected on the same guideline. Root cause was discoverability + a gap 
      UGC with no EULA and no working report/block.
   4. `APPLE_1_2_SUBMISSION.md` Part 4 claimed every prayer request had a report menu;
      prayer requests are actually admin-only and never shown to members.
-Fixed 2026-09-08 (tsc clean): community tab is now sign-in gated (`CommunityScreen`
-renders a gate when `!user`, routing to MoreScreen's login modal via the new
-`MoreMain: { openLogin?: boolean }` param); report "…" added to the post detail header
-and to each incoming chat bubble; terms notice added to the Sign In tab; volunteer
-applicant name now runs through `checkContentFilter`. Submission doc updated to match.
+Fixed 2026-09-08/09 on branch `apple-1.2-ugc-fixes` (tsc clean, 10 commits).
+App changes: community tab sign-in gated (`CommunityScreen` renders a gate when
+`!user`, routing to MoreScreen's login modal via the new `MoreMain:
+{ openLogin?: boolean }` param); report "…" added to the post detail header and to
+each incoming chat bubble; terms notice on the Sign In tab; volunteer applicant name
+runs through `checkContentFilter`; author-name fallback uses `t('anonymous')`.
 
-**Backend status as of 2026-08-19: CODE COMPLETE, DEPLOYMENT PENDING.**
+**Two of Apple's four required mechanisms were genuinely broken, not just hidden:**
+1. Every seeded `community_posts` row had `author_id = NULL` (only `author_name`
+   text). `showModerationMenu` branches on `targetUserId`, so those posts offered
+   "Hide this content" and NEVER "Block user" — requirement 4 was unfulfillable.
+   Fixed by linking the posts to reviewer@gracechurch.app.
+2. `blocked_users.blocked_id` referenced `auth.users`, but `BlockedUsersScreen`
+   embeds `profiles:blocked_id(full_name)`. PostgREST cannot join into the `auth`
+   schema, the request errored, and `fetchBlockedUsersDetailed` swallows errors →
+   the unblock screen was ALWAYS empty. FK re-pointed to `public.profiles`
+   (section F2 of supabase_apple_1_2_compliance.sql + supabase_setup.sql).
+
+`auth.users` logs proved the review path: reviewer@gracechurch.app last signed in
+2026-08-14 20:15 (review day) and member@gracechurch.app had `last_sign_in_at =
+NULL`. The pastor account authored every community post, so its own content showed
+✕ (delete) instead of ⋯ (report) — the reviewer saw zero report controls. The reply
+template now leads with "sign in as the member account" and why.
+
+Demo account passwords: member@gracechurch.app / `gracemember2026` (reset via
+`extensions.crypt` — the documented GraceMember2026! had never actually been set;
+last_sign_in_at was NULL). Pastor: reviewer@gracechurch.app / GraceReview2026!.
+
+**Backend status 2026-09-09: DEPLOYED AND VERIFIED.** All 7 steps done; a smoke-test
+report produced a real email at junyeongpark96@gmail.com. Notes that differ from the
+doc's original plan:
+- No Homebrew on this machine → Supabase CLI installed as a devDependency; use
+  `npx supabase ...` from the repo root.
+- Dashboard → Database → Webhooks 404s here (the `supabase_functions` schema does
+  not exist because webhooks were never enabled from the UI). Replaced with
+  `supabase_moderation_webhooks.sql`: pg_net triggers that POST the same payload.
+- Xcode is NOT installed (Command Line Tools only) → no iOS simulator. Verify on a
+  physical device via TestFlight; Apple requires the review videos to come from a
+  physical device anyway.
+- EAS/Expo account is `sundayproject` (browser login). Apple Developer portal login
+  from eas-cli failed; existing credentials on EAS servers work, so answer "no" to
+  the Apple sign-in prompt. TestFlight build 1.0.3 (12) submitted 2026-09-08.
+- Version is 1.0.3, NOT 1.0 — Apple's "Version reviewed: 1.0 (10)" is abbreviated;
+  build 10 was really 1.0.3. Do not downgrade app.json.
+
+**Historical (2026-08-19): CODE COMPLETE, DEPLOYMENT PENDING.**
 All app code + SQL + Edge Functions written and `npx tsc --noEmit` passes clean. User has NOT yet run the deploy steps. When user returns to this initiative, do NOT re-implement — walk them through `APPLE_1_2_SUBMISSION.md` "Part 1 — Deployment" sections 1–7 in order. Steps 1 & 6 require the Supabase Dashboard (they cannot be automated from CLI without secrets user must paste). Steps 2, 4, 5 require Supabase CLI which may not be installed yet.
 
 Deployment checklist (all pending):

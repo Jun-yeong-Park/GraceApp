@@ -1,2 +1,2 @@
 - [User: Jay (Grace Church dev)](user_role.md) — solo dev, wants copy-paste deploy steps not abstract advice
-- [Project: Grace Church App](project_grace_church_app.md) — Expo RN + Supabase church app; Apple 1.2 UGC rejected twice (Aug 14 2026); app-side gaps fixed 2026-09-08, **Supabase deploy still pending** (see APPLE_1_2_SUBMISSION.md)
+- [Project: Grace Church App](project_grace_church_app.md) — Expo RN + Supabase church app; Apple 1.2 UGC rejected twice (Aug 14 2026); 백엔드 배포·검증 완료(2026-09-09), 앱 수정 완료 — **영상 촬영 + 재제출만 남음** (see APPLE_1_2_SUBMISSION.md)
