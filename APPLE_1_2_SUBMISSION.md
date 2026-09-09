@@ -214,11 +214,13 @@ user-generated content mechanisms and are re-submitting for review.
      disappear from the blocker's feed without app restart.
    - Per Apple's requirement, blocking also generates an automatic report and
      sends a notification email to the developer.
-   - Users can review and revoke their blocks via More → 차단한 사용자 관리.
+   - Users can review and revoke their blocks via More -> Account ->
+     "Manage Blocked Users" (scroll to the bottom of the More tab).
 
 5. Admin moderation
-   - Pastors have an in-app moderation dashboard (Admin → 신고관리) to review
-     pending reports, delete offending content, and ban users.
+   - Pastors have an in-app moderation dashboard (More -> Admin Dashboard ->
+     "Moderation" tab) to review pending reports, delete offending content,
+     and ban users.
    - Banned users are immediately signed out on next auth check and are blocked
      from inserting new posts/comments/messages by both application logic and
      Supabase RLS policies.
