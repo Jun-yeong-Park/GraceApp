@@ -249,10 +249,11 @@ WHERE TO FIND EACH REQUIRED MECHANISM
    - A banned user is signed out at the next auth check and is prevented from
      posting by database-level security policies, not only by app logic.
 
-Screen recordings (captured on a physical iPhone):
-   Video A - Terms of use before sign-in:  <upload link>
-   Video B - Reporting objectionable content: <upload link>
-   Video C - Blocking a user, content removed instantly: <upload link>
+Three screen recordings, captured on a physical iPhone, are attached to this
+message:
+   Video A - Terms of use presented before signing in / registering
+   Video B - Reporting objectionable content
+   Video C - Blocking a user, with their content removed instantly
 
 Accounts:
    Member (use this one for reporting and blocking):
