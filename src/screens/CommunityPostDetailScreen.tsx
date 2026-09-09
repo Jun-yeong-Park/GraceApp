@@ -128,7 +128,7 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
     if (!commentText.trim()) return;
     if (checkContentFilter(commentText, lng)) return;
     setSending(true);
-    const authorName = (user.user_metadata?.full_name as string | undefined) || user.email?.split('@')[0] || '익명';
+    const authorName = (user.user_metadata?.full_name as string | undefined) || user.email?.split('@')[0] || t('anonymous');
     const { error } = await supabase.from('post_comments').insert({
       post_id: post.id,
       author_id: user.id,

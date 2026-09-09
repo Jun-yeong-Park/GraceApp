@@ -73,7 +73,7 @@ function lu(key: keyof typeof UI, lang: string): string {
 
 export default function CommunityChatScreen({ navigation, route }: Props) {
   const { communityId } = route.params;
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const { user } = useAuth();
 
   const community = COMMUNITIES.find((c) => c.id === communityId);
@@ -151,7 +151,7 @@ export default function CommunityChatScreen({ navigation, route }: Props) {
     const authorName =
       (user.user_metadata?.full_name as string | undefined) ||
       user.email?.split('@')[0] ||
-      '익명';
+      t('anonymous');
     const { error } = await supabase.from('community_messages').insert({
       community_id: communityId,
       author_id: user.id,
