@@ -1,6 +1,6 @@
 ---
 name: Grace Church App project context
-description: Sunlight Grace Church Orlando — Expo RN + Supabase church community app; currently addressing Apple App Store Guideline 1.2 UGC rejection (Aug 2026).
+description: Sunlight Grace Church Orlando — Expo RN + Supabase church community app. Apple Guideline 1.2 (UGC) rejections of Aug 2026 resolved; App Store APPROVED 2026-09-11 (v1.0.3 build 12).
 type: project
 ---
 
@@ -9,7 +9,25 @@ type: project
 **Supabase project:** `https://epgwwsixhgdagavnurog.supabase.co`
 **Repo root:** `/Users/jay/develop/GraceApp/grace-church-app/` (single-app repo, no monorepo; git remote `Jun-yeong-Park/GraceApp`)
 
-**Current initiative (2026-08-19):** Fixing Apple Guideline 1.2 (UGC) rejection.
+**✅ APPROVED by App Review 2026-09-11 — v1.0.3 (12).** Submitted 2026-09-09 with three
+physical-device recordings attached in Resolution Center and the member-account-first
+reply below. Nothing is pending on the 1.2 initiative.
+
+Post-approval follow-ups (not done yet):
+- Demo content is live for real members: posts "Saturday Prayer Walk" / "Youth Group
+  Movie Night" (by "Demo Member"), the "Pastor Reviewer" posts, 4 seeded comments and
+  2 seeded chat messages in `kosovo`. Remove before real users notice; re-run
+  `supabase_seed_review_demo.sql` before any future review. Keep the demo ACCOUNTS.
+- Resend key `re_3XTSK...` was pasted into a chat on 2026-09-08; rotation never
+  confirmed. If rotated, `npx supabase secrets set RESEND_API_KEY=...` again.
+- `Alert.alert('', msg)` in moderation.ts (4 sites) has no button array, so iOS
+  shows a system-language "확인/OK" button regardless of app language. Cosmetic;
+  fix by passing an explicit localized OK button in the next build.
+- Password TextInputs in MoreScreen lack `autoCapitalize="none"`.
+- Unrouted dead code: `SermonScreen.tsx`, `MoreStackNavigator.tsx`,
+  `BulletinStackNavigator.tsx`. Bible JSONs (~34MB) are statically bundled.
+
+**Original initiative (2026-08-19):** Fixing Apple Guideline 1.2 (UGC) rejection.
 Why: Community tab (`Comm.` — posts, photos, comments, chat) requires UGC moderation infra Apple mandates. Existing app had EULA screen + report + block + client-side profanity filter, but was missing: (1) existing-user EULA re-prompt, (2) developer email alerts on report/block, (3) server-side profanity check, (4) unblock UI, (5) admin moderation dashboard, (6) user ban enforcement.
 How to apply: All UGC-adjacent code changes must consider Apple 1.2 compliance. When touching auth, community, or admin screens, keep the ban check and EULA-accept check paths intact.
 
