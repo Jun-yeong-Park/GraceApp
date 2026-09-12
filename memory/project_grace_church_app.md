@@ -68,6 +68,14 @@ Demo account passwords: member@gracechurch.app / `gracemember2026` (reset via
 `extensions.crypt` — the documented GraceMember2026! had never actually been set;
 last_sign_in_at was NULL). Pastor: reviewer@gracechurch.app / GraceReview2026!.
 
+**2026-09-12 — 기능 전수 점검 + 아이콘 (build 14, functional-fixes → main).**
+데모 계정 REST 로 실제 호출해 검증. 안 되던 것 8건 수정(댓글·채팅 즉시표시, 봉사신청 저장, 가입승인 탭,
+실제 계정삭제, 푸시알림, 헌금정보 표시+홈 진입점, 설교링크 관리, TTS 무음스위치). 시뮬레이터(EAS preview
+simulator 빌드)에서 추가로 잡은 것: 게시글 상세 댓글 입력창이 탭바 뒤에 가려짐, EULA 모달 노치, Admin 탭바
+flexGrow, expo-asset 57 크래시(expo-audio peerDep). 이모지 → assets/icons 43개(Icon.tsx).
+더미데이터 전부 삭제, 심사용 최소 세트(Kosovo 게시물 2·댓글 1·채팅 2)와 데모 계정 2개만 유지.
+관련 SQL: supabase_functional_fixes.sql / Edge: send-push. 실기기 미확인: TTS 무음, 알림 토글, 푸시 수신.
+
 **Backend status 2026-09-09: DEPLOYED AND VERIFIED.** All 7 steps done; a smoke-test
 report produced a real email at junyeongpark96@gmail.com. Notes that differ from the
 doc's original plan:
