@@ -741,7 +741,7 @@ export default function HomeScreen() {
           activeOpacity={0.85}
         >
           <View style={[styles.actionIconWrap, { backgroundColor: '#F0FFF4' }]}>
-            <Icon name="action-volunteer" size={26} />
+            <Icon name="admin-members" size={26} />
           </View>
           <View style={styles.actionInfo}>
             <Text style={styles.actionTitle}>
@@ -769,6 +769,24 @@ export default function HomeScreen() {
             </Text>
             <Text style={styles.actionDesc}>
               {lang === 'en' ? "This week's sermon in 3 languages" : lang === 'es' ? 'El sermón de esta semana en 3 idiomas' : '이번 주 설교를 3개국어로 확인하세요'}
+            </Text>
+          </View>
+          <Text style={styles.actionArrow}>›</Text>
+        </TouchableOpacity>
+
+        {/* 온라인 헌금 — Offering 화면은 라우트만 있고 진입점이 없었음 */}
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => navigation.navigate('Offering')}
+          activeOpacity={0.85}
+        >
+          <View style={[styles.actionIconWrap, { backgroundColor: '#FFF1F2' }]}>
+            <Icon name="action-volunteer" size={26} />
+          </View>
+          <View style={styles.actionInfo}>
+            <Text style={styles.actionTitle}>{t('offeringTitle')}</Text>
+            <Text style={styles.actionDesc}>
+              {lang === 'en' ? 'Give securely online' : lang === 'es' ? 'Ofrenda segura en línea' : '온라인으로 안전하게 헌금하세요'}
             </Text>
           </View>
           <Text style={styles.actionArrow}>›</Text>
