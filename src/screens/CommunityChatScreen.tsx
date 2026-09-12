@@ -75,7 +75,7 @@ function lu(key: keyof typeof UI, lang: string): string {
 export default function CommunityChatScreen({ navigation, route }: Props) {
   const { communityId } = route.params;
   const { lang, t } = useLanguage();
-  const { user } = useAuth();
+  const { user, displayName } = useAuth();
 
   const community = COMMUNITIES.find((c) => c.id === communityId);
   const communityColor = community?.color ?? Colors.primary;
@@ -156,6 +156,7 @@ export default function CommunityChatScreen({ navigation, route }: Props) {
     if (checkContentFilter(content, lng)) return;
     setSending(true);
     const authorName =
+      displayName ||
       (user.user_metadata?.full_name as string | undefined) ||
       user.email?.split('@')[0] ||
       t('anonymous');

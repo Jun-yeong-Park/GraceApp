@@ -63,7 +63,7 @@ function lu(key: keyof typeof UI, lang: string): string {
 export default function CommunityPostDetailScreen({ navigation, route }: Props) {
   const { post, communityId } = route.params;
   const { lang, t } = useLanguage();
-  const { user } = useAuth();
+  const { user, displayName } = useAuth();
 
   const community = COMMUNITIES.find((c) => c.id === communityId);
   const communityColor = community?.color ?? Colors.primary;
@@ -135,7 +135,8 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
     if (!commentText.trim()) return;
     if (checkContentFilter(commentText, lng)) return;
     setSending(true);
-    const authorName = (user.user_metadata?.full_name as string | undefined) || user.email?.split('@')[0] || t('anonymous');
+    // 프로필 이름(더보기 → 이름 변경에서 수정한 값) 우선, 없으면 가입 시 이름 → 이메일 앞부분
+    const authorName = displayName || (user.user_metadata?.full_name as string | undefined) || user.email?.split('@')[0] || t('anonymous');
     const { data, error } = await supabase.from('post_comments').insert({
       post_id: post.id,
       author_id: user.id,
