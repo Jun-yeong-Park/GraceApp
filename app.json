@@ -20,7 +20,11 @@
           "NSAllowsArbitraryLoads": true
         },
         "ITSAppUsesNonExemptEncryption": false,
-        "CFBundleLocalizations": ["en", "ko", "es"],
+        "CFBundleLocalizations": [
+          "en",
+          "ko",
+          "es"
+        ],
         "CFBundleDevelopmentRegion": "en"
       }
     },
@@ -50,6 +54,13 @@
         "expo-image-picker",
         {
           "photosPermission": "Allow access to your photo library to share photos of community gatherings."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#2b588a"
         }
       ]
     ],

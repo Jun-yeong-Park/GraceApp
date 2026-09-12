@@ -130,14 +130,20 @@ export default function CommunityChatScreen({ navigation, route }: Props) {
           filter: `community_id=eq.${communityId}`,
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
-          setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+          appendMessage(payload.new as Message);
         }
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [communityId]);
+
+  // Realtime 이 꺼져 있어도 내가 보낸 메시지는 바로 보여야 하므로, 저장 응답과
+  // Realtime 이벤트 양쪽에서 호출한다. 같은 id 는 한 번만 추가.
+  function appendMessage(m: Message) {
+    setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+  }
 
   async function sendMessage() {
     if (!user) {
@@ -152,12 +158,12 @@ export default function CommunityChatScreen({ navigation, route }: Props) {
       (user.user_metadata?.full_name as string | undefined) ||
       user.email?.split('@')[0] ||
       t('anonymous');
-    const { error } = await supabase.from('community_messages').insert({
+    const { data, error } = await supabase.from('community_messages').insert({
       community_id: communityId,
       author_id: user.id,
       author_name: authorName,
       content,
-    });
+    }).select().single();
     setSending(false);
     if (error) {
       const msg = lang === 'ko' ? '메시지 전송에 실패했습니다. 다시 시도해 주세요.'
@@ -166,6 +172,7 @@ export default function CommunityChatScreen({ navigation, route }: Props) {
       Alert.alert('', msg);
       return; // 실패 시 입력창의 내용을 유지해서 사용자가 다시 전송할 수 있게 함
     }
+    if (data) appendMessage(data as Message);
     setText('');
   }
 

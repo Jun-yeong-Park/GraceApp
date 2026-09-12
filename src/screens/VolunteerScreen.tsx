@@ -114,24 +114,37 @@ export default function VolunteerScreen({ navigation }: Props) {
     setSelectedRoleId('');
     setApplicantName('');
   }
-  function submitApplication() {
+  const [applying, setApplying] = useState(false);
+  async function submitApplication() {
+    if (!modalPost || applying) return;
     if (!applicantName.trim()) {
       Alert.alert(t('volunteerErrorTitle'), t('volunteerNameError'));
       return;
     }
     if (checkContentFilter(applicantName, lng)) return;
-    setPosts(prev => prev.map(post => {
-      if (post.id !== modalPost?.id) return post;
-      return {
-        ...post,
-        roles: post.roles.map(role => {
-          if (role.id !== selectedRoleId || isFull(role)) return role;
-          return { ...role, applicants: [...role.applicants, applicantName.trim()] };
-        }),
-      };
-    }));
-    const roleLabel = modalPost?.roles.find(r => r.id === selectedRoleId)?.name ?? '';
-    const title = modalPost?.title ?? '';
+    setApplying(true);
+    // 회원은 volunteer_posts 를 직접 수정할 권한이 없으므로 서버 함수로 신청자를 추가한다.
+    // (supabase_functional_fixes.sql 의 apply_volunteer)
+    const { data, error } = await supabase.rpc('apply_volunteer', {
+      p_post_id: modalPost.id,
+      p_role_id: selectedRoleId,
+      p_name: applicantName.trim(),
+    });
+    setApplying(false);
+    if (error) {
+      const code = error.message ?? '';
+      const msg =
+        code.includes('ROLE_FULL')       ? (lng === 'ko' ? '이미 마감된 역할입니다.' : lng === 'es' ? 'Este puesto ya está completo.' : 'This role is already full.')
+        : code.includes('ALREADY_APPLIED') ? (lng === 'ko' ? '이미 같은 이름으로 신청되어 있습니다.' : lng === 'es' ? 'Ya te has inscrito con este nombre.' : 'You have already signed up with this name.')
+        : code.includes('BLOCKED_CONTENT') ? (lng === 'ko' ? '부적절한 표현이 포함되어 있습니다.' : lng === 'es' ? 'Contiene lenguaje inapropiado.' : 'Contains inappropriate language.')
+        : (lng === 'ko' ? '신청에 실패했습니다. 다시 시도해 주세요.' : lng === 'es' ? 'No se pudo enviar. Inténtalo de nuevo.' : 'Sign-up failed. Please try again.');
+      Alert.alert(t('volunteerErrorTitle'), msg);
+      return;
+    }
+    const postId = modalPost.id;
+    setPosts(prev => prev.map(post => post.id === postId ? { ...post, roles: data as VolunteerRole[] } : post));
+    const roleLabel = modalPost.roles.find(r => r.id === selectedRoleId)?.name ?? '';
+    const title = modalPost.title;
     closeApply();
     Alert.alert(t('volunteerSuccessTitle'), `${title}\n${roleLabel} ${t('volunteerSuccessSuffix')}`);
   }
@@ -397,8 +410,8 @@ export default function VolunteerScreen({ navigation }: Props) {
                     value={applicantName}
                     onChangeText={setApplicantName}
                   />
-                  <TouchableOpacity style={styles.submitBtn} onPress={submitApplication}>
-                    <Text style={styles.submitBtnText}>{t('volunteerSubmit')}</Text>
+                  <TouchableOpacity style={[styles.submitBtn, applying && { opacity: 0.6 }]} onPress={submitApplication} disabled={applying}>
+                    {applying ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>{t('volunteerSubmit')}</Text>}
                   </TouchableOpacity>
                   <View style={{ height: 20 }} />
                 </>

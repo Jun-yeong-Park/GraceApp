@@ -23,6 +23,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Language, translations } from '../i18n/translations';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import { enablePush, disablePush, refreshPushIfEnabled } from '../utils/push';
 
 type Props = NativeStackScreenProps<MoreTabParamList, 'MoreMain'>;
 
@@ -91,8 +92,12 @@ const UI = {
   logoutMsg:   { ko: '로그아웃하시겠습니까?', en: 'Are you sure?', es: '¿Cerrar sesión?' },
   logoutOk:    { ko: '로그아웃', en: 'Sign Out', es: 'Cerrar sesión' },
   deleteTitle: { ko: '계정 삭제', en: 'Delete Account', es: 'Eliminar cuenta' },
-  deleteMsg:   { ko: '계정을 삭제하시겠습니까?\n삭제 요청은 관리자에게 전달되며, 로그아웃됩니다.', en: 'Delete your account?\nThe request will be sent to admin and you will be signed out.', es: '¿Eliminar tu cuenta?\nLa solicitud se enviará al admin.' },
-  deleteOk:    { ko: '삭제 요청', en: 'Request Deletion', es: 'Solicitar eliminación' },
+  deleteMsg:   { ko: '계정을 영구 삭제하시겠습니까?\n프로필과 로그인 정보가 즉시 삭제되며 되돌릴 수 없습니다. 작성한 게시물·댓글은 익명으로 남습니다.', en: 'Permanently delete your account?\nYour profile and login are removed immediately and cannot be recovered. Posts and comments you wrote remain, without your name attached.', es: '¿Eliminar tu cuenta permanentemente?\nTu perfil e inicio de sesión se eliminan de inmediato y no se pueden recuperar. Tus publicaciones y comentarios permanecen de forma anónima.' },
+  deleteOk:    { ko: '영구 삭제', en: 'Delete Permanently', es: 'Eliminar permanentemente' },
+  deleteDone:  { ko: '계정이 삭제되었습니다.', en: 'Your account has been deleted.', es: 'Tu cuenta ha sido eliminada.' },
+  deleteFail:  { ko: '계정 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.', en: 'Account deletion failed. Please try again shortly.', es: 'No se pudo eliminar la cuenta. Inténtalo de nuevo.' },
+  notifDenied: { ko: '알림 권한이 꺼져 있습니다. 설정 앱에서 이 앱의 알림을 허용해 주세요.', en: 'Notifications are not allowed. Please enable them for this app in Settings.', es: 'Las notificaciones no están permitidas. Actívalas para esta app en Ajustes.' },
+  notifSimulator: { ko: '실제 기기에서만 알림을 켤 수 있습니다.', en: 'Notifications are only available on a physical device.', es: 'Las notificaciones solo están disponibles en un dispositivo físico.' },
   cancel:      { ko: '취소', en: 'Cancel', es: 'Cancelar' },
   close:       { ko: '닫기', en: 'Close', es: 'Cerrar' },
   pastorOnly:  { ko: '목회자 전용', en: 'Pastor only', es: 'Solo pastor' },
@@ -169,7 +174,7 @@ export default function MoreScreen({ navigation, route }: Props) {
       pwShort:    { ko: '비밀번호는 6자 이상이어야 합니다.', en: 'Password must be at least 6 characters.', es: 'La contraseña debe tener al menos 6 caracteres.' },
       pwMismatch: { ko: '비밀번호가 일치하지 않습니다.', en: 'Passwords do not match.',                es: 'Las contraseñas no coinciden.' },
       eulaReq:    { ko: '회원가입을 위해서는 이용약관에 동의해 주세요.', en: 'You must agree to the Terms of Use to sign up.', es: 'Debe aceptar los Términos de Uso para registrarse.' },
-      success:    { ko: '가입이 완료되었습니다!\n이메일 인증 후 로그인해 주세요.', en: 'Account created!\nPlease verify your email to sign in.', es: '¡Cuenta creada!\nVerifica tu correo para iniciar sesión.' },
+      success:    { ko: '가입 신청이 접수되었습니다!\n목회자가 승인하면 로그인할 수 있습니다.', en: 'Sign-up received!\nYou can sign in once a pastor approves your account.', es: '¡Registro recibido!\nPodrás iniciar sesión cuando un pastor apruebe tu cuenta.' },
     };
     if (!name.trim())     { Alert.alert('', M.nameReq[l]);    return; }
     if (!email.trim())    { Alert.alert('', M.emailReq[l]);   return; }
@@ -198,13 +203,36 @@ export default function MoreScreen({ navigation, route }: Props) {
 
   useEffect(() => {
     AsyncStorage.getItem(NOTIF_KEY)
-      .then((v) => setNotifEnabled(v === 'true'))
+      .then((v) => {
+        const enabled = v === 'true';
+        setNotifEnabled(enabled);
+        // 켜져 있으면 토큰·언어·사용자 연결을 최신 상태로 갱신
+        refreshPushIfEnabled({ enabled, userId: user?.id ?? null, lang });
+      })
       .catch(() => {});
-  }, []);
+  }, [user?.id, lang]);
 
-  function toggleNotif(val: boolean) {
-    setNotifEnabled(val);
-    AsyncStorage.setItem(NOTIF_KEY, val ? 'true' : 'false');
+  const [notifBusy, setNotifBusy] = useState(false);
+  async function toggleNotif(val: boolean) {
+    if (notifBusy) return;
+    setNotifBusy(true);
+    try {
+      if (val) {
+        const ok = await enablePush({ userId: user?.id ?? null, lang });
+        if (!ok) {
+          Alert.alert('', Platform.OS === 'ios' || Platform.OS === 'android' ? lu('notifDenied', l) : lu('notifSimulator', l));
+          setNotifEnabled(false);
+          await AsyncStorage.setItem(NOTIF_KEY, 'false');
+          return;
+        }
+      } else {
+        await disablePush();
+      }
+      setNotifEnabled(val);
+      await AsyncStorage.setItem(NOTIF_KEY, val ? 'true' : 'false');
+    } finally {
+      setNotifBusy(false);
+    }
   }
 
   function handleSignOut() {
@@ -235,9 +263,13 @@ export default function MoreScreen({ navigation, route }: Props) {
       {
         text: lu('deleteOk', l),
         style: 'destructive',
-        onPress: () => {
-          signOut();
-          Alert.alert('', translations[lang].accountDeletionRequested);
+        onPress: async () => {
+          // delete_my_account() 은 auth.users 행을 지우고, profiles 등은 CASCADE 로 정리된다.
+          await disablePush();
+          const { error } = await supabase.rpc('delete_my_account');
+          if (error) { Alert.alert('', lu('deleteFail', l)); return; }
+          await signOut();
+          Alert.alert('', lu('deleteDone', l));
         },
       },
     ]);

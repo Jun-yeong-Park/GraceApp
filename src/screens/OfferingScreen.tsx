@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,29 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
+  Alert,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MoreStackParamList } from '../types';
 import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../services/supabase';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Offering'>;
+
+// 관리자 → 앱설정 → 온라인 헌금 설정에서 저장한 값 (app_settings)
+interface OfferingInfo { url: string; zelle: string; venmo: string; cashApp: string }
+
+const OTHER = {
+  title:  { ko: '다른 헌금 방법', en: 'Other Ways to Give', es: 'Otras Formas de Ofrendar' },
+  link:   { ko: '온라인 헌금 링크', en: 'Online giving link', es: 'Enlace de ofrenda en línea' },
+  copied: { ko: '복사되었습니다', en: 'Copied', es: 'Copiado' },
+  tapCopy:{ ko: '탭하여 복사', en: 'Tap to copy', es: 'Toca para copiar' },
+  tapOpen:{ ko: '탭하여 열기', en: 'Tap to open', es: 'Toca para abrir' },
+};
 
 const TITHELY_FORM_ID = '6547d5e0-5d42-11ee-90fc-1260ab546d11';
 
@@ -61,7 +75,33 @@ const TITHELY_HTML = `
 `;
 
 export default function OfferingScreen({ navigation }: Props) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const L: 'ko' | 'en' | 'es' = lang === 'ko' ? 'ko' : lang === 'es' ? 'es' : 'en';
+  const [info, setInfo] = useState<OfferingInfo>({ url: '', zelle: '', venmo: '', cashApp: '' });
+
+  useEffect(() => {
+    supabase
+      .from('app_settings')
+      .select('key, value')
+      .in('key', ['offering_url', 'offering_zelle', 'offering_venmo', 'offering_cash_app'])
+      .then(({ data }) => {
+        if (!data) return;
+        const m: Record<string, string> = {};
+        data.forEach((r: any) => { m[r.key] = typeof r.value === 'string' ? r.value : ''; });
+        setInfo({ url: m.offering_url ?? '', zelle: m.offering_zelle ?? '', venmo: m.offering_venmo ?? '', cashApp: m.offering_cash_app ?? '' });
+      }, () => {});
+  }, []);
+
+  async function copy(v: string) {
+    await Clipboard.setStringAsync(v);
+    Alert.alert('', OTHER.copied[L]);
+  }
+
+  const rows: { icon: string; label: string; value: string; onPress: () => void; hint: string }[] = [];
+  if (info.url)     rows.push({ icon: '💳', label: OTHER.link[L], value: info.url, onPress: () => Linking.openURL(info.url), hint: OTHER.tapOpen[L] });
+  if (info.zelle)   rows.push({ icon: '💸', label: 'Zelle',    value: info.zelle,   onPress: () => copy(info.zelle),   hint: OTHER.tapCopy[L] });
+  if (info.venmo)   rows.push({ icon: '📱', label: 'Venmo',    value: info.venmo,   onPress: () => Linking.openURL(`https://venmo.com/u/${info.venmo.replace(/^@/, '')}`), hint: OTHER.tapOpen[L] });
+  if (info.cashApp) rows.push({ icon: '💵', label: 'Cash App', value: info.cashApp, onPress: () => Linking.openURL(`https://cash.app/${info.cashApp.startsWith('$') ? info.cashApp : '$' + info.cashApp}`), hint: OTHER.tapOpen[L] });
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -112,6 +152,23 @@ export default function OfferingScreen({ navigation }: Props) {
           />
         </View>
 
+        {/* 관리자가 설정한 다른 헌금 방법 (없으면 섹션 자체를 숨김) */}
+        {rows.length > 0 && (
+          <View style={styles.otherCard}>
+            <Text style={styles.otherTitle}>{OTHER.title[L]}</Text>
+            {rows.map((r, i) => (
+              <TouchableOpacity key={r.label} style={[styles.otherRow, i < rows.length - 1 && styles.otherRowBorder]} onPress={r.onPress} activeOpacity={0.7}>
+                <Text style={styles.otherIcon}>{r.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.otherLabel}>{r.label}</Text>
+                  <Text style={styles.otherValue} numberOfLines={1}>{r.value}</Text>
+                </View>
+                <Text style={styles.otherHint}>{r.hint}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
         {/* 하단 안내 */}
         <View style={styles.noteRow}>
           <Text style={styles.noteIcon}>✉️</Text>
@@ -124,6 +181,18 @@ export default function OfferingScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
+
+  otherCard: {
+    backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginTop: 16,
+    borderWidth: 1, borderColor: Colors.border,
+  },
+  otherTitle: { fontSize: 14, fontWeight: '800', color: Colors.primary, marginBottom: 6 },
+  otherRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
+  otherRowBorder: { borderBottomWidth: 1, borderBottomColor: Colors.border },
+  otherIcon: { fontSize: 20, width: 32 },
+  otherLabel: { fontSize: 12, color: Colors.text.secondary, marginBottom: 2 },
+  otherValue: { fontSize: 15, fontWeight: '600', color: Colors.text.primary },
+  otherHint: { fontSize: 11, color: Colors.text.light, marginLeft: 8 },
 
   // 헤더
   header: {

@@ -30,7 +30,9 @@ import {
 } from '../utils/moderation';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Admin'>;
-type AdminTab = 'moderation' | 'prayer' | 'visit' | 'announcements' | 'bulletins' | 'members' | 'settings' | 'events';
+type AdminTab = 'moderation' | 'approvals' | 'prayer' | 'visit' | 'announcements' | 'bulletins' | 'members' | 'settings' | 'events';
+
+interface PendingUser { id: string; email: string; full_name: string | null; created_at: string }
 
 interface CalendarEvent {
   id: string;
@@ -156,6 +158,11 @@ export default function AdminScreen({ navigation }: Props) {
   const [reports, setReports] = useState<PendingReport[]>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
 
+  // ── Pending sign-ups (email confirm ON → pastor approves in-app) ──────────
+  const [pending, setPending] = useState<PendingUser[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [pendingBusy, setPendingBusy] = useState<string | null>(null);
+
   // ── Offering Settings ──────────────────────────────────────────────────────
   const [offeringUrl, setOfferingUrl] = useState('');
   const [offeringZelle, setOfferingZelle] = useState('');
@@ -163,9 +170,14 @@ export default function AdminScreen({ navigation }: Props) {
   const [offeringCashApp, setOfferingCashApp] = useState('');
   const [offeringSaving, setOfferingSaving] = useState(false);
 
+  // ── Latest sermon (Worship tab) ────────────────────────────────────────────
+  const [sermonUrl, setSermonUrl] = useState('');
+  const [sermonSaving, setSermonSaving] = useState(false);
+
   useEffect(() => {
     if (!isPastor) return;
     if (tab === 'moderation') fetchReports();
+    if (tab === 'approvals') fetchPending();
     if (tab === 'prayer') fetchPrayers();
     if (tab === 'visit') fetchVisits();
     if (tab === 'announcements') fetchAnnouncements();
@@ -280,6 +292,42 @@ export default function AdminScreen({ navigation }: Props) {
     setAnnLoading(false);
   }, []);
 
+  const fetchPending = useCallback(async () => {
+    setPendingLoading(true);
+    const { data } = await supabase.rpc('admin_list_pending_users');
+    setPending((data ?? []) as PendingUser[]);
+    setPendingLoading(false);
+  }, []);
+
+  // 배지 숫자용 — 탭 진입 전에도 대기 인원을 보여준다
+  useEffect(() => { if (isPastor) fetchPending(); }, [isPastor, fetchPending]);
+
+  async function approveUser(u: PendingUser) {
+    setPendingBusy(u.id);
+    const { error } = await supabase.rpc('admin_approve_user', { target_id: u.id });
+    setPendingBusy(null);
+    if (error) { Alert.alert(lang === 'en' ? 'Error' : lang === 'es' ? 'Error' : '오류', error.message); return; }
+    setPending(prev => prev.filter(p => p.id !== u.id));
+    fetchMembers();
+  }
+
+  function rejectUser(u: PendingUser) {
+    Alert.alert(
+      lang === 'en' ? 'Reject sign-up?' : lang === 'es' ? '¿Rechazar registro?' : '가입을 거절할까요?',
+      lang === 'en' ? `${u.email} will be deleted and can sign up again later.` : lang === 'es' ? `${u.email} será eliminado y podrá registrarse de nuevo.` : `${u.email} 계정이 삭제됩니다. 나중에 다시 가입할 수 있습니다.`,
+      [
+        { text: lang === 'en' ? 'Cancel' : lang === 'es' ? 'Cancelar' : '취소', style: 'cancel' },
+        { text: lang === 'en' ? 'Reject' : lang === 'es' ? 'Rechazar' : '거절', style: 'destructive', onPress: async () => {
+          setPendingBusy(u.id);
+          const { error } = await supabase.rpc('admin_reject_user', { target_id: u.id });
+          setPendingBusy(null);
+          if (error) { Alert.alert(lang === 'en' ? 'Error' : lang === 'es' ? 'Error' : '오류', error.message); return; }
+          setPending(prev => prev.filter(p => p.id !== u.id));
+        }},
+      ]
+    );
+  }
+
   const fetchMembers = useCallback(async () => {
     setMemberLoading(true);
     try {
@@ -379,7 +427,7 @@ export default function AdminScreen({ navigation }: Props) {
     const { data } = await supabase
       .from('app_settings')
       .select('key, value')
-      .in('key', ['weekly_verse', 'offering_url', 'offering_zelle', 'offering_venmo', 'offering_cash_app']);
+      .in('key', ['weekly_verse', 'offering_url', 'offering_zelle', 'offering_venmo', 'offering_cash_app', 'latest_sermon_url']);
 
     if (data) {
       const map: Record<string, string> = {};
@@ -398,6 +446,7 @@ export default function AdminScreen({ navigation }: Props) {
       setOfferingZelle(map['offering_zelle'] ?? '');
       setOfferingVenmo(map['offering_venmo'] ?? '');
       setOfferingCashApp(map['offering_cash_app'] ?? '');
+      setSermonUrl(map['latest_sermon_url'] ?? '');
     }
     setSettingsLoading(false);
   }, []);
@@ -696,6 +745,22 @@ export default function AdminScreen({ navigation }: Props) {
     );
   }
 
+  async function saveSermonUrl() {
+    const v = sermonUrl.trim();
+    if (v && !/(?:v=|\/live\/|\/shorts\/|\/embed\/|youtu\.be\/)[A-Za-z0-9_-]{11}/.test(v)) {
+      Alert.alert('', lang === 'en' ? 'Please paste a YouTube video link.' : lang === 'es' ? 'Pegue un enlace de video de YouTube.' : 'YouTube 영상 링크를 붙여넣어 주세요.');
+      return;
+    }
+    setSermonSaving(true);
+    const { error } = await supabase.from('app_settings').upsert({ key: 'latest_sermon_url', value: v }, { onConflict: 'key' });
+    setSermonSaving(false);
+    if (error) Alert.alert(lang === 'en' ? 'Error' : lang === 'es' ? 'Error' : '오류', error.message);
+    else Alert.alert(
+      lang === 'en' ? '✓ Saved' : lang === 'es' ? '✓ Guardado' : '✓ 저장 완료',
+      lang === 'en' ? 'The Worship tab now shows this video.' : lang === 'es' ? 'La pestaña Culto ahora muestra este video.' : '예배 탭에 이 영상이 표시됩니다.'
+    );
+  }
+
   async function saveOfferingSettings() {
     setOfferingSaving(true);
     const rows = [
@@ -751,6 +816,7 @@ export default function AdminScreen({ navigation }: Props) {
 
   const TABS: { key: AdminTab; label: string; emoji: string; badge?: number }[] = [
     { key: 'moderation',    label: lang === 'en' ? 'Moderation'    : lang === 'es' ? 'Moderación'   : '신고관리', emoji: '🛡️', badge: reports.length || undefined },
+    { key: 'approvals',     label: lang === 'en' ? 'Approvals'     : lang === 'es' ? 'Aprobaciones' : '가입승인', emoji: '✅', badge: pending.length || undefined },
     { key: 'prayer',        label: lang === 'en' ? 'Prayer'        : lang === 'es' ? 'Oración'      : '기도요청', emoji: '🙏' },
     { key: 'visit',         label: lang === 'en' ? 'Visits'        : lang === 'es' ? 'Visitas'      : '심방요청', emoji: '🏠' },
     { key: 'announcements', label: lang === 'en' ? 'Announcements' : lang === 'es' ? 'Avisos'       : '공지사항', emoji: '📢' },
@@ -904,6 +970,58 @@ export default function AdminScreen({ navigation }: Props) {
       )}
 
       {/* ── 기도요청 탭 ──────────────────────────────────────────────────────── */}
+      {/* ── 가입승인 (Approvals) 탭 ─────────────────────────────────────────── */}
+      {tab === 'approvals' && (
+        pendingLoading ? <LoadingView /> : (
+          <FlatList
+            data={pending}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.list}
+            refreshing={pendingLoading}
+            onRefresh={fetchPending}
+            ListHeaderComponent={
+              <Text style={styles.settingsHint}>
+                {lang === 'en' ? 'New sign-ups wait here until a pastor approves them. Approved members can sign in right away.'
+                 : lang === 'es' ? 'Los nuevos registros esperan aquí hasta que un pastor los apruebe. Los aprobados pueden iniciar sesión de inmediato.'
+                 : '새로 가입한 분들은 목회자가 승인하기 전까지 여기서 대기합니다. 승인하면 바로 로그인할 수 있습니다.'}
+              </Text>
+            }
+            ListEmptyComponent={<EmptyView emoji="✅" text={lang === 'en' ? 'No sign-ups waiting for approval.' : lang === 'es' ? 'No hay registros pendientes.' : '승인 대기 중인 가입이 없습니다.'} />}
+            renderItem={({ item }) => {
+              const busy = pendingBusy === item.id;
+              return (
+                <View style={styles.card}>
+                  <View style={styles.memberRow}>
+                    <View style={[styles.memberAvatar, { backgroundColor: Colors.secondary + '30' }]}>
+                      <Text style={[styles.memberAvatarText, { color: '#92400E' }]}>{(item.full_name ?? item.email ?? '?').charAt(0).toUpperCase()}</Text>
+                    </View>
+                    <View style={styles.memberInfo}>
+                      <Text style={styles.memberName}>{item.full_name ?? (lang === 'en' ? '(no name)' : lang === 'es' ? '(sin nombre)' : '(이름 없음)')}</Text>
+                      <Text style={styles.memberEmail}>{item.email}</Text>
+                      <Text style={styles.memberJoined}>{lang === 'en' ? 'Requested: ' : lang === 'es' ? 'Solicitado: ' : '신청일: '}{formatDate(item.created_at)}</Text>
+                    </View>
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                    <TouchableOpacity
+                      style={[styles.saveBtn, { flex: 1, marginTop: 0, backgroundColor: '#059669' }, busy && styles.saveBtnDisabled]}
+                      onPress={() => approveUser(item)} disabled={busy}
+                    >
+                      {busy ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.saveBtnText}>{lang === 'en' ? '✓ Approve' : lang === 'es' ? '✓ Aprobar' : '✓ 승인'}</Text>}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.saveBtn, { flex: 1, marginTop: 0, backgroundColor: '#DC2626' }, busy && styles.saveBtnDisabled]}
+                      onPress={() => rejectUser(item)} disabled={busy}
+                    >
+                      <Text style={styles.saveBtnText}>{lang === 'en' ? 'Reject' : lang === 'es' ? 'Rechazar' : '거절'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            }}
+          />
+        )
+      )}
+
       {tab === 'prayer' && (
         prayerLoading ? <LoadingView /> : (
           <FlatList
@@ -1265,6 +1383,30 @@ export default function AdminScreen({ navigation }: Props) {
               {settingsSaving
                 ? <ActivityIndicator color={Colors.white} />
                 : <Text style={styles.saveBtnText}>{lang === 'en' ? '📖 Save Verse' : lang === 'es' ? '📖 Guardar Versículo' : '📖 말씀 저장하기'}</Text>
+              }
+            </TouchableOpacity>
+
+            <View style={{ height: 32 }} />
+
+            {/* ── 최근 설교 영상 ── */}
+            <Text style={styles.settingsSection}>{lang === 'en' ? '▶ Latest Sermon Video' : lang === 'es' ? '▶ Video del Último Sermón' : '▶ 최근 설교 영상'}</Text>
+            <Text style={styles.settingsHint}>{lang === 'en' ? 'YouTube link shown at the top of the Worship tab. Leave blank to use the default.' : lang === 'es' ? 'Enlace de YouTube que se muestra en la pestaña Culto. Déjelo vacío para usar el predeterminado.' : '예배 탭 상단에 표시되는 YouTube 링크입니다. 비워두면 기본 영상이 표시됩니다.'}</Text>
+            <View style={styles.settingsCard}>
+              <TextInput
+                style={[styles.input, { marginBottom: 0 }]}
+                placeholder="https://www.youtube.com/watch?v=..."
+                placeholderTextColor={Colors.text.light}
+                value={sermonUrl} onChangeText={setSermonUrl}
+                autoCapitalize="none" keyboardType="url" autoCorrect={false}
+              />
+            </View>
+            <TouchableOpacity
+              style={[styles.saveBtn, { backgroundColor: '#DC2626' }, sermonSaving && styles.saveBtnDisabled]}
+              onPress={saveSermonUrl} disabled={sermonSaving}
+            >
+              {sermonSaving
+                ? <ActivityIndicator color={Colors.white} />
+                : <Text style={styles.saveBtnText}>{lang === 'en' ? '▶ Save Sermon Link' : lang === 'es' ? '▶ Guardar Enlace del Sermón' : '▶ 설교 링크 저장하기'}</Text>
               }
             </TouchableOpacity>
 

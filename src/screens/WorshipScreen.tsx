@@ -14,11 +14,18 @@ import { WorshipStackParamList, Bulletin } from '../types';
 import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { TranslationKey } from '../i18n/translations';
+import { supabase } from '../services/supabase';
 
 type Props = NativeStackScreenProps<WorshipStackParamList, 'WorshipMain'>;
 
-const LATEST_YOUTUBE_URL = 'https://www.youtube.com/live/vOI6wz51_20?si=eM0l56-mLCyTyLUy';
-const YOUTUBE_THUMBNAIL = 'https://img.youtube.com/vi/vOI6wz51_20/hqdefault.jpg';
+// 관리자 → 앱설정에서 저장한 값이 없을 때 쓰는 기본 링크
+const DEFAULT_YOUTUBE_URL = 'https://www.youtube.com/live/vOI6wz51_20?si=eM0l56-mLCyTyLUy';
+
+/** youtube.com/watch?v=, /live/, /shorts/, /embed/, youtu.be/ 형태에서 영상 ID 추출 */
+export function youtubeVideoId(url: string): string | null {
+  const m = url.match(/(?:v=|\/live\/|\/shorts\/|\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
 
 interface BulletinItem extends Bulletin {
   titleKey: TranslationKey;
@@ -78,13 +85,28 @@ export default function WorshipScreen({ navigation }: Props) {
   const L: 'ko' | 'en' | 'es' = lang === 'ko' ? 'ko' : lang === 'es' ? 'es' : 'en';
   const dateLocale = DATE_LOCALES[L];
   const [sermonTitle, setSermonTitle] = useState('');
+  const [sermonUrl, setSermonUrl] = useState(DEFAULT_YOUTUBE_URL);
+  const videoId = youtubeVideoId(sermonUrl);
+  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined;
 
   useEffect(() => {
-    fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(LATEST_YOUTUBE_URL)}&format=json`)
-      .then(r => r.json())
-      .then(d => { if (d.title) setSermonTitle(d.title); })
-      .catch(() => {});
+    supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'latest_sermon_url')
+      .maybeSingle()
+      .then(({ data }) => {
+        const v = typeof data?.value === 'string' ? data.value.trim() : '';
+        if (v && youtubeVideoId(v)) setSermonUrl(v);
+      }, () => {});
   }, []);
+
+  useEffect(() => {
+    fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(sermonUrl)}&format=json`)
+      .then(r => r.json())
+      .then(d => { setSermonTitle(d.title ?? ''); })
+      .catch(() => {});
+  }, [sermonUrl]);
 
   function scheduleName(item: ScheduleItem) {
     return item[L] ?? item.ko;
@@ -98,11 +120,11 @@ export default function WorshipScreen({ navigation }: Props) {
         <Text style={styles.sectionTitle}>{lu('recentSermon', lang)}</Text>
         <TouchableOpacity
           style={styles.sermonCard}
-          onPress={() => Linking.openURL(LATEST_YOUTUBE_URL)}
+          onPress={() => Linking.openURL(sermonUrl)}
           activeOpacity={0.85}
         >
           <View style={styles.thumbnailWrap}>
-            <Image source={{ uri: YOUTUBE_THUMBNAIL }} style={styles.thumbnail} resizeMode="cover" />
+            <Image source={thumbnail ? { uri: thumbnail } : undefined} style={styles.thumbnail} resizeMode="cover" />
             <View style={styles.playOverlay}>
               <View style={styles.playBtn}>
                 <Text style={styles.playIcon}>▶</Text>

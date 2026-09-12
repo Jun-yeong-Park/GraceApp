@@ -300,8 +300,8 @@ export const translations = {
     // Misc alerts (user-visible)
     cannotCallPhone: '전화 앱을 열 수 없습니다.',
     cannotOpenMail: '메일 앱을 열 수 없습니다.',
-    emailVerificationTitle: '이메일 인증 필요',
-    emailVerificationMsg: '관리자에게 계정 활성화를 요청해 주세요.',
+    emailVerificationTitle: '승인 대기 중',
+    emailVerificationMsg: '가입 신청이 접수되어 목회자 승인을 기다리고 있습니다. 승인되면 바로 로그인할 수 있습니다.',
     invalidCredentials: '이메일 또는 비밀번호를 확인해 주세요.',
     photoSelectError: '사진을 선택해 주세요.',
     uploadFailedTitle: '업로드 실패',
@@ -611,8 +611,8 @@ export const translations = {
     // Misc alerts (user-visible)
     cannotCallPhone: 'Cannot open the phone app.',
     cannotOpenMail: 'Cannot open the mail app.',
-    emailVerificationTitle: 'Email Verification Required',
-    emailVerificationMsg: 'Please contact an administrator to activate your account.',
+    emailVerificationTitle: 'Awaiting Approval',
+    emailVerificationMsg: 'Your sign-up is waiting for a pastor to approve it. You can sign in as soon as it is approved.',
     invalidCredentials: 'Invalid email or password.',
     photoSelectError: 'Please select a photo.',
     uploadFailedTitle: 'Upload Failed',
@@ -922,8 +922,8 @@ export const translations = {
     // Misc alerts (user-visible)
     cannotCallPhone: 'No se puede abrir la aplicación de teléfono.',
     cannotOpenMail: 'No se puede abrir la aplicación de correo.',
-    emailVerificationTitle: 'Verificación de Correo Requerida',
-    emailVerificationMsg: 'Contacte a un administrador para activar su cuenta.',
+    emailVerificationTitle: 'Pendiente de Aprobación',
+    emailVerificationMsg: 'Su registro está esperando la aprobación de un pastor. Podrá iniciar sesión tan pronto como sea aprobado.',
     invalidCredentials: 'Correo o contraseña incorrectos.',
     photoSelectError: 'Por favor selecciona una foto.',
     uploadFailedTitle: 'Carga Fallida',

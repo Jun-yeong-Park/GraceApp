@@ -98,7 +98,7 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
         table: 'post_comments',
         filter: `post_id=eq.${post.id}`,
       }, (payload) => {
-        setComments((prev) => [...prev, payload.new as Comment]);
+        appendComment(payload.new as Comment);
       })
       .on('postgres_changes', {
         event: 'DELETE',
@@ -112,6 +112,12 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
 
     return () => { supabase.removeChannel(channel); };
   }, [post.id]);
+
+  // Realtime 이 꺼져 있어도 내가 쓴 댓글은 바로 보여야 하므로, 저장 응답과
+  // Realtime 이벤트 양쪽에서 호출한다. 같은 id 는 한 번만 추가.
+  function appendComment(c: Comment) {
+    setComments((prev) => (prev.some((x) => x.id === c.id) ? prev : [...prev, c]));
+  }
 
   async function fetchComments() {
     const { data } = await supabase
@@ -129,16 +135,17 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
     if (checkContentFilter(commentText, lng)) return;
     setSending(true);
     const authorName = (user.user_metadata?.full_name as string | undefined) || user.email?.split('@')[0] || t('anonymous');
-    const { error } = await supabase.from('post_comments').insert({
+    const { data, error } = await supabase.from('post_comments').insert({
       post_id: post.id,
       author_id: user.id,
       author_name: authorName,
       content: commentText.trim(),
-    });
+    }).select().single();
     setSending(false);
     if (error) {
       Alert.alert('', lang === 'ko' ? '댓글 등록에 실패했습니다. 다시 시도해주세요.' : lang === 'es' ? 'Error al publicar el comentario.' : 'Failed to post comment. Please try again.');
     } else {
+      if (data) appendComment(data as Comment);
       setCommentText('');
     }
   }
