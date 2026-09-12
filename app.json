@@ -62,6 +62,13 @@
           "icon": "./assets/icon.png",
           "color": "#2b588a"
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "owner": "sundayproject",

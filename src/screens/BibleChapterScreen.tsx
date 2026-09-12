@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Speech from 'expo-speech';
+import { setAudioModeAsync } from 'expo-audio';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../utils/colors';
 import { BIBLE_BOOKS, BOOK_ABBR } from '../data/bibleBooks';
@@ -214,13 +215,23 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
     return () => { Speech.stop(); };
   }, []);
 
+  // expo-speech 는 기본(ambient) 오디오 세션을 쓰기 때문에 iOS 무음 스위치가
+  // 켜져 있으면 소리가 전혀 나지 않는다. 읽기 시작 전에 재생(playback) 세션으로
+  // 바꿔 무음 모드에서도 들리게 한다. 실패해도 읽기는 그대로 진행.
+  async function prepareAudioSession() {
+    try {
+      await setAudioModeAsync({ playsInSilentMode: true, interruptionMode: 'duckOthers' });
+    } catch { /* ignore */ }
+  }
+
   // 단일 절 읽기
-  const speakVerse = useCallback((verse: Verse) => {
+  const speakVerse = useCallback(async (verse: Verse) => {
     if (speakingVerse === verse.verse && !isPlayingAll) {
       stopSpeech();
       return;
     }
     stopSpeech();
+    await prepareAudioSession();
     setSpeakingVerse(verse.verse);
     Speech.speak(verse.text, {
       language: TTS_LANG[translation.lang],
@@ -237,6 +248,7 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
       stopSpeech();
       return;
     }
+    await prepareAudioSession();
     playingAllRef.current = true;
     setIsPlayingAll(true);
 

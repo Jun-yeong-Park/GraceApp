@@ -9,7 +9,14 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://epgwwsixhgdagavnurog.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_0NMBHoV1ue7KwrhkeY2Jzw_O-J0i4fz"
+      }
     },
     "production": {
       "autoIncrement": true,
