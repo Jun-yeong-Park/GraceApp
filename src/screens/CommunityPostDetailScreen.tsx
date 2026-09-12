@@ -20,6 +20,7 @@ import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 import { COMMUNITIES, getCommunityName } from './CommunityScreen';
 import { checkContentFilter, fetchBlockedIds, fetchHiddenContentIds, showModerationMenu } from '../utils/moderation';
 
@@ -228,13 +229,13 @@ export default function CommunityPostDetailScreen({ navigation, route }: Props) 
       <View style={styles.chipRow}>
         {post.event_date ? (
           <View style={styles.chip}>
-            <Text style={styles.chipIcon}>📅</Text>
+            <Icon name="ui-calendar" size={13} tintColor={Colors.text.secondary} />
             <Text style={styles.chipText}>{post.event_date}</Text>
           </View>
         ) : null}
         {post.location ? (
           <View style={styles.chip}>
-            <Text style={styles.chipIcon}>📍</Text>
+            <Icon name="ui-pin" size={13} tintColor={Colors.text.secondary} />
             <Text style={styles.chipText}>{post.location}</Text>
           </View>
         ) : null}
@@ -395,7 +396,6 @@ const styles = StyleSheet.create({
   postTitle: { fontSize: 19, fontWeight: '800', color: Colors.text.primary, marginBottom: 12, lineHeight: 26 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   chip: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.background, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, gap: 4 },
-  chipIcon: { fontSize: 13 },
   chipText: { fontSize: 13, color: Colors.text.secondary, fontWeight: '500' },
   postDesc: { fontSize: 15, color: Colors.text.secondary, lineHeight: 23, marginBottom: 14 },
   photoScroll: { marginBottom: 14 },

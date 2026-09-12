@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BulletinStackParamList } from '../types';
 import { Colors } from '../utils/colors';
+import Icon from '../components/Icon';
 import { useLanguage } from '../context/LanguageContext';
 
 type Props = NativeStackScreenProps<BulletinStackParamList, 'BulletinDetail'>;
@@ -48,7 +49,7 @@ export default function BulletinDetailScreen({ navigation, route }: Props) {
 
         {isEmpty && (
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyEmoji}>📋</Text>
+            <Icon name="admin-bulletins" size={56} tintColor={Colors.text.light} />
             <Text style={styles.emptyText}>{t('bulletinDetailEmpty')}</Text>
           </View>
         )}

@@ -24,6 +24,7 @@ import { Language, translations } from '../i18n/translations';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 import { enablePush, disablePush, refreshPushIfEnabled } from '../utils/push';
+import Icon, { IconName } from '../components/Icon';
 
 type Props = NativeStackScreenProps<MoreTabParamList, 'MoreMain'>;
 
@@ -329,7 +330,7 @@ export default function MoreScreen({ navigation, route }: Props) {
           {/* 언어 */}
           <View style={styles.row}>
             <View style={styles.rowIconWrap}>
-              <Text style={styles.rowIcon}>🌐</Text>
+              <Icon name="more-language" size={20} />
             </View>
             <Text style={styles.rowLabel}>{lu('language', l)}</Text>
             <View style={styles.langPills}>
@@ -354,7 +355,7 @@ export default function MoreScreen({ navigation, route }: Props) {
           {/* 알림 */}
           <View style={styles.row}>
             <View style={[styles.rowIconWrap, { backgroundColor: '#FFF3E0' }]}>
-              <Text style={styles.rowIcon}>🔔</Text>
+              <Icon name="more-notifications" size={20} />
             </View>
             <Text style={styles.rowLabel}>{lu('notif', l)}</Text>
             <Switch
@@ -370,7 +371,7 @@ export default function MoreScreen({ navigation, route }: Props) {
           {/* 개인정보 처리방침 */}
           <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('PrivacyPolicy')} activeOpacity={0.75}>
             <View style={[styles.rowIconWrap, { backgroundColor: '#E8F5E9' }]}>
-              <Text style={styles.rowIcon}>🔒</Text>
+              <Icon name="more-privacy" size={20} />
             </View>
             <Text style={styles.rowLabel}>{lu('privacy', l)}</Text>
             <Text style={styles.arrow}>›</Text>
@@ -381,7 +382,7 @@ export default function MoreScreen({ navigation, route }: Props) {
           {/* 이용약관 */}
           <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('Eula')} activeOpacity={0.75}>
             <View style={[styles.rowIconWrap, { backgroundColor: '#F3E5F5' }]}>
-              <Text style={styles.rowIcon}>📜</Text>
+              <Icon name="more-terms" size={20} />
             </View>
             <Text style={styles.rowLabel}>{lu('eula', l)}</Text>
             <Text style={styles.arrow}>›</Text>
@@ -393,7 +394,7 @@ export default function MoreScreen({ navigation, route }: Props) {
         <View style={styles.card}>
           <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('Directory')} activeOpacity={0.75}>
             <View style={[styles.rowIconWrap, { backgroundColor: '#EEF2FF' }]}>
-              <Text style={styles.rowIcon}>📒</Text>
+              <Icon name="more-directory" size={20} />
             </View>
             <Text style={styles.rowLabel}>{lu('directory', l)}</Text>
             <Text style={styles.arrow}>›</Text>
@@ -401,7 +402,7 @@ export default function MoreScreen({ navigation, route }: Props) {
           <View style={styles.divider} />
           <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('Receipt')} activeOpacity={0.75}>
             <View style={[styles.rowIconWrap, { backgroundColor: '#FEF9E7' }]}>
-              <Text style={styles.rowIcon}>🧾</Text>
+              <Icon name="more-receipt" size={20} />
             </View>
             <Text style={styles.rowLabel}>{lu('receipt', l)}</Text>
             <Text style={styles.arrow}>›</Text>
@@ -446,7 +447,7 @@ export default function MoreScreen({ navigation, route }: Props) {
           {[
             { icon: '📷', label: 'Instagram', url: INSTAGRAM_URL, color: '#C13584' },
             { icon: '👥', label: 'Facebook',  url: FACEBOOK_URL,  color: '#1877F2' },
-            { icon: '🌐', label: l === 'ko' ? '교회 홈페이지' : l === 'es' ? 'Sitio Web' : 'Website', url: WEBSITE_URL, color: Colors.primary },
+            { icon: 'more-website' as IconName, label: l === 'ko' ? '교회 홈페이지' : l === 'es' ? 'Sitio Web' : 'Website', url: WEBSITE_URL, color: Colors.primary },
           ].map((item, i, arr) => (
             <TouchableOpacity
               key={item.url}
@@ -455,7 +456,9 @@ export default function MoreScreen({ navigation, route }: Props) {
               activeOpacity={0.75}
             >
               <View style={[styles.rowIconWrap, { backgroundColor: item.color + '18' }]}>
-                <Text style={styles.rowIcon}>{item.icon}</Text>
+                {item.icon === 'more-website'
+                  ? <Icon name="more-website" size={20} tintColor={item.color} />
+                  : <Text style={styles.rowIcon}>{item.icon}</Text>}
               </View>
               <Text style={[styles.rowLabel, { color: item.color }]}>{item.label}</Text>
               <Text style={styles.arrow}>›</Text>
@@ -474,7 +477,7 @@ export default function MoreScreen({ navigation, route }: Props) {
                 activeOpacity={0.75}
               >
                 <View style={[styles.rowIconWrap, { backgroundColor: '#EDE9FE' }]}>
-                  <Text style={styles.rowIcon}>⚙️</Text>
+                  <Icon name="more-admin" size={20} />
                 </View>
                 <Text style={styles.rowLabel}>{lu('dashboard', l)}</Text>
                 <View style={styles.adminBadge}>
@@ -497,7 +500,7 @@ export default function MoreScreen({ navigation, route }: Props) {
                 activeOpacity={0.75}
               >
                 <View style={[styles.rowIconWrap, { backgroundColor: '#E0F2FE' }]}>
-                  <Text style={styles.rowIcon}>✏️</Text>
+                  <Icon name="more-edit-name" size={20} />
                 </View>
                 <Text style={styles.rowLabel}>{lu('changeName', l)}</Text>
                 {displayName ? <Text style={styles.currentName}>{displayName}</Text> : null}
@@ -510,7 +513,7 @@ export default function MoreScreen({ navigation, route }: Props) {
                 activeOpacity={0.75}
               >
                 <View style={[styles.rowIconWrap, { backgroundColor: '#FEE2E2' }]}>
-                  <Text style={styles.rowIcon}>🚫</Text>
+                  <Icon name="more-blocked" size={20} />
                 </View>
                 <Text style={styles.rowLabel}>{lu('blocked', l)}</Text>
                 <Text style={styles.arrow}>›</Text>
@@ -518,7 +521,7 @@ export default function MoreScreen({ navigation, route }: Props) {
               <View style={styles.divider} />
               <TouchableOpacity style={styles.row} onPress={handleSignOut} activeOpacity={0.75}>
                 <View style={[styles.rowIconWrap, { backgroundColor: '#FFF3E0' }]}>
-                  <Text style={styles.rowIcon}>🚪</Text>
+                  <Icon name="more-signout" size={20} />
                 </View>
                 <Text style={styles.rowLabel}>{lu('logout', l)}</Text>
                 <Text style={styles.arrow}>›</Text>
@@ -526,7 +529,7 @@ export default function MoreScreen({ navigation, route }: Props) {
               <View style={styles.divider} />
               <TouchableOpacity style={styles.row} onPress={handleDeleteAccount} activeOpacity={0.75}>
                 <View style={[styles.rowIconWrap, { backgroundColor: '#FEE2E2' }]}>
-                  <Text style={styles.rowIcon}>🗑</Text>
+                  <Icon name="more-delete" size={20} />
                 </View>
                 <Text style={[styles.rowLabel, { color: '#DC2626' }]}>{lu('deleteAcct', l)}</Text>
                 <Text style={styles.arrow}>›</Text>

@@ -14,6 +14,7 @@ import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import Icon, { COMMUNITY_ICON } from '../components/Icon';
 
 type Props = NativeStackScreenProps<CommunityTabStackParamList, 'CommunityMain'>;
 
@@ -176,7 +177,7 @@ export default function CommunityScreen({ navigation }: Props) {
 
               {/* 이모지 */}
               <View style={[styles.emojiWrap, { backgroundColor: item.color + '18' }]}>
-                <Text style={styles.emoji}>{item.emoji}</Text>
+                <Icon name={COMMUNITY_ICON[item.id]} size={52} />
               </View>
 
               {/* 텍스트 */}
@@ -313,13 +314,11 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 14,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 14,
     marginVertical: 14,
-  },
-  emoji: {
-    fontSize: 26,
   },
   cardInfo: {
     flex: 1,

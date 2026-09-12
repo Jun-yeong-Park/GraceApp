@@ -11,6 +11,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MoreTabParamList } from '../types';
 import { Colors } from '../utils/colors';
+import Icon from '../components/Icon';
 import { useLanguage } from '../context/LanguageContext';
 
 type Props = NativeStackScreenProps<MoreTabParamList, 'PrivacyPolicy'>;
@@ -254,7 +255,7 @@ export default function PrivacyPolicyScreen({ navigation }: Props) {
         {/* Title Card */}
         <View style={styles.titleCard}>
           <View style={styles.lockBadge}>
-            <Text style={styles.lockIcon}>🔒</Text>
+            <Icon name="more-privacy" size={22} tintColor={Colors.primary} />
           </View>
           <Text style={styles.titleCardHeading}>{UI.title[activeLang]}</Text>
           <Text style={styles.titleCardChurch}>{CHURCH_NAME[activeLang]}</Text>

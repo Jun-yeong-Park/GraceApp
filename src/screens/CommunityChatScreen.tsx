@@ -19,6 +19,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 import { COMMUNITIES, getCommunityName } from './CommunityScreen';
+import Icon, { COMMUNITY_ICON } from '../components/Icon';
 import { checkContentFilter, fetchBlockedIds, fetchHiddenContentIds, showModerationMenu } from '../utils/moderation';
 
 type Props = NativeStackScreenProps<CommunityTabStackParamList, 'CommunityChat'>;
@@ -211,7 +212,7 @@ export default function CommunityChatScreen({ navigation, route }: Props) {
           <Text style={styles.backArrow}>‹</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          {community && <Text style={styles.headerEmoji}>{community.emoji}</Text>}
+          {community && <Icon name={COMMUNITY_ICON[community.id]} size={22} tintColor={Colors.white} style={styles.headerEmoji} />}
           <Text style={styles.headerTitle} numberOfLines={1}>
             {communityName} {lu('chat', lang)}
           </Text>
@@ -353,7 +354,7 @@ const styles = StyleSheet.create({
   backBtn: { width: 36, alignItems: 'center' },
   backArrow: { fontSize: 30, color: Colors.white, lineHeight: 32 },
   headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  headerEmoji: { fontSize: 18 },
+  headerEmoji: { marginRight: 2 },
   headerTitle: { fontSize: 16, fontWeight: '800', color: Colors.white, flexShrink: 1 },
 
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },

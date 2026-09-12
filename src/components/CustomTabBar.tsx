@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { RootTabParamList } from '../types';
+import Icon, { IconName } from './Icon';
 
 type TabName = keyof RootTabParamList;
 
@@ -19,12 +20,12 @@ function getDeepRouteName(routeState: any): string {
 
 const HIDE_TAB_ROUTES = new Set(['CommunityChat']);
 
-const TAB_ICONS: Record<TabName, string> = {
-  Home:         '🏠',
-  BibleTab:     '📖',
-  CommunityTab: '🤝',
-  WorshipTab:   '⛪',
-  More:         '···',
+const TAB_ICONS: Record<TabName, IconName> = {
+  Home:         'tab-home',
+  BibleTab:     'tab-bible',
+  CommunityTab: 'tab-community',
+  WorshipTab:   'tab-worship',
+  More:         'tab-more',
 };
 
 const TAB_LABELS: Record<TabName, { ko: string; en: string; es: string }> = {
@@ -54,7 +55,7 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         {state.routes.map((route, index) => {
           const focused = state.index === index;
           const name = route.name as TabName;
-          const icon = TAB_ICONS[name] ?? '·';
+          const icon = TAB_ICONS[name];
           const label = TAB_LABELS[name]?.[l] ?? route.name;
 
           return (
@@ -72,9 +73,12 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               activeOpacity={0.75}
             >
               {focused && <View style={styles.activeHighlight} />}
-              <Text style={[styles.icon, focused ? styles.iconActive : styles.iconInactive]}>
-                {icon}
-              </Text>
+              <Icon
+                name={icon}
+                size={22}
+                tintColor={focused ? '#fff' : 'rgba(255,255,255,0.45)'}
+                style={styles.icon}
+              />
               <Text style={[styles.label, focused ? styles.labelActive : styles.labelInactive]}>
                 {label}
               </Text>
@@ -123,12 +127,7 @@ const styles = StyleSheet.create({
     opacity: 0.25,
     borderRadius: 30,
   },
-  icon: {
-    fontSize: 20,
-    lineHeight: 26,
-  },
-  iconActive: { opacity: 1 },
-  iconInactive: { opacity: 0.4 },
+  icon: { marginBottom: 2 },
   label: {
     fontSize: 10,
     fontWeight: '700',

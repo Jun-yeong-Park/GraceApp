@@ -20,6 +20,7 @@ import { VisitRequest, MoreStackParamList } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Visit'>;
 
@@ -172,7 +173,7 @@ export default function VisitScreen({ navigation }: Props) {
             </View>
           ) : visits.length === 0 ? (
             <View style={styles.emptyBox}>
-              <Text style={styles.emptyEmoji}>🏠</Text>
+              <Icon name="action-visit" size={56} tintColor={Colors.text.light} />
               <Text style={styles.emptyText}>{t('visitEmptyList')}</Text>
             </View>
           ) : (
@@ -210,16 +211,16 @@ export default function VisitScreen({ navigation }: Props) {
                       </View>
                     </View>
                     <View style={styles.infoRow}>
-                      <Text style={styles.infoIcon}>📅</Text>
+                      <Icon name="ui-calendar" size={14} tintColor={Colors.text.secondary} />
                       <Text style={styles.infoText}>{item.date}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                      <Text style={styles.infoIcon}>🕐</Text>
+                      <Icon name="ui-clock" size={14} tintColor={Colors.text.secondary} />
                       <Text style={styles.infoText}>{item.time}</Text>
                     </View>
                     {!!item.phone && (
                       <View style={styles.infoRow}>
-                        <Text style={styles.infoIcon}>📞</Text>
+                        <Icon name="ui-phone" size={14} tintColor={Colors.text.secondary} />
                         <Text style={styles.infoText}>{item.phone}</Text>
                       </View>
                     )}
@@ -235,7 +236,7 @@ export default function VisitScreen({ navigation }: Props) {
         {!isAdmin && (
           submitted ? (
             <View style={styles.successBox}>
-              <Text style={styles.successEmoji}>🏠</Text>
+              <Icon name="action-visit" size={72} tintColor={Colors.primary} style={styles.successEmoji} />
               <Text style={styles.successTitle}>{t('visitSuccessTitle')}</Text>
               <Text style={styles.successSub}>{t('visitSuccessMsg')}</Text>
               <TouchableOpacity style={styles.anotherBtn} onPress={() => setSubmitted(false)}>
@@ -270,7 +271,7 @@ export default function VisitScreen({ navigation }: Props) {
                 style={styles.pickerButton}
                 onPress={() => { setShowTimePicker(false); setShowDatePicker(v => !v); }}
               >
-                <Text style={styles.pickerIcon}>📅</Text>
+                <Icon name="ui-calendar" size={20} tintColor={Colors.primary} style={styles.pickerIcon} />
                 <Text style={styles.pickerText}>{formatDate(visitDate)}</Text>
                 <Text style={styles.pickerChevron}>{showDatePicker ? '▲' : '▼'}</Text>
               </TouchableOpacity>
@@ -298,7 +299,7 @@ export default function VisitScreen({ navigation }: Props) {
                 style={styles.pickerButton}
                 onPress={() => { setShowDatePicker(false); setShowTimePicker(v => !v); }}
               >
-                <Text style={styles.pickerIcon}>🕐</Text>
+                <Icon name="ui-clock" size={20} tintColor={Colors.primary} style={styles.pickerIcon} />
                 <Text style={styles.pickerText}>{formatTime(visitTime)}</Text>
                 <Text style={styles.pickerChevron}>{showTimePicker ? '▲' : '▼'}</Text>
               </TouchableOpacity>
@@ -363,7 +364,6 @@ const styles = StyleSheet.create({
   headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '700', color: Colors.primary },
   loadingBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  emptyEmoji: { fontSize: 48 },
   emptyText: { fontSize: 15, color: Colors.text.secondary },
   list: { padding: 16, gap: 12 },
   card: {
@@ -385,14 +385,13 @@ const styles = StyleSheet.create({
   deleteBtn: { padding: 4 },
   deleteBtnText: { fontSize: 16 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  infoIcon: { fontSize: 14 },
   infoText: { fontSize: 13, color: Colors.text.primary, fontWeight: '500' },
   cardNote: { fontSize: 13, color: Colors.text.secondary, lineHeight: 20, marginTop: 6 },
   successBox: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
     padding: 32, gap: 12,
   },
-  successEmoji: { fontSize: 64, marginBottom: 8 },
+  successEmoji: { marginBottom: 8 },
   successTitle: { fontSize: 20, fontWeight: '800', color: Colors.primary, textAlign: 'center' },
   successSub: { fontSize: 14, color: Colors.text.secondary, textAlign: 'center', lineHeight: 22 },
   anotherBtn: {
@@ -418,7 +417,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.border, borderRadius: 10,
     padding: 14, marginBottom: 4, backgroundColor: Colors.white,
   },
-  pickerIcon: { fontSize: 18, marginRight: 10 },
+  pickerIcon: { marginRight: 10 },
   pickerText: { flex: 1, fontSize: 15, color: Colors.text.primary, fontWeight: '500' },
   pickerChevron: { fontSize: 12, color: Colors.text.light },
   pickerContainer: {

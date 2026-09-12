@@ -18,6 +18,7 @@ import { MoreStackParamList, Announcement } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 
 type HomeNavigationProp = NativeStackNavigationProp<MoreStackParamList, 'HomeMain'>;
 
@@ -700,7 +701,7 @@ export default function HomeScreen() {
           activeOpacity={0.85}
         >
           <View style={[styles.actionIconWrap, { backgroundColor: '#E8F4FF' }]}>
-            <Text style={styles.actionIcon}>🙏</Text>
+            <Icon name="action-prayer" size={26} />
           </View>
           <View style={styles.actionInfo}>
             <Text style={styles.actionTitle}>
@@ -720,7 +721,7 @@ export default function HomeScreen() {
           activeOpacity={0.85}
         >
           <View style={[styles.actionIconWrap, { backgroundColor: '#FFF4E8' }]}>
-            <Text style={styles.actionIcon}>🏠</Text>
+            <Icon name="action-visit" size={26} />
           </View>
           <View style={styles.actionInfo}>
             <Text style={styles.actionTitle}>
@@ -740,7 +741,7 @@ export default function HomeScreen() {
           activeOpacity={0.85}
         >
           <View style={[styles.actionIconWrap, { backgroundColor: '#F0FFF4' }]}>
-            <Text style={styles.actionIcon}>🤲</Text>
+            <Icon name="action-volunteer" size={26} />
           </View>
           <View style={styles.actionInfo}>
             <Text style={styles.actionTitle}>
@@ -760,7 +761,7 @@ export default function HomeScreen() {
           activeOpacity={0.85}
         >
           <View style={[styles.actionIconWrap, { backgroundColor: '#F5F3FF' }]}>
-            <Text style={styles.actionIcon}>📝</Text>
+            <Icon name="action-sermon" size={26} />
           </View>
           <View style={styles.actionInfo}>
             <Text style={styles.actionTitle}>
@@ -1036,7 +1037,6 @@ const styles = StyleSheet.create({
     marginRight: 14,
     flexShrink: 0,
   },
-  actionIcon: { fontSize: 24 },
   actionInfo: { flex: 1 },
   actionTitle: { fontSize: 15, fontWeight: '700', color: Colors.text.primary, marginBottom: 3 },
   actionDesc: { fontSize: 12, color: Colors.text.secondary, lineHeight: 17 },

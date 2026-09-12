@@ -28,6 +28,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 import { COMMUNITIES, getCommunityName, CommunityItem } from './CommunityScreen';
+import Icon, { COMMUNITY_ICON } from '../components/Icon';
 import { checkContentFilter, fetchBlockedIds, fetchHiddenContentIds, showModerationMenu } from '../utils/moderation';
 
 type Props = NativeStackScreenProps<CommunityTabStackParamList, 'CommunityDetail'>;
@@ -393,7 +394,7 @@ export default function CommunityDetailScreen({ navigation, route }: Props) {
           <Text style={styles.backArrow}>‹</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerEmoji}>{community.emoji}</Text>
+          <Icon name={COMMUNITY_ICON[community.id]} size={24} tintColor={Colors.white} style={styles.headerEmoji} />
           <Text style={styles.headerTitle} numberOfLines={1}>{getCommunityName(community, lang)}</Text>
         </View>
         <View style={styles.headerRight}>
@@ -433,7 +434,7 @@ export default function CommunityDetailScreen({ navigation, route }: Props) {
             refreshControl={<RefreshControl refreshing={refreshingPosts} onRefresh={() => { setRefreshingPosts(true); fetchPosts(); }} tintColor={communityColor} />}
             ListEmptyComponent={
               <View style={styles.emptyWrap}>
-                <Text style={styles.emptyEmoji}>{community.emoji}</Text>
+                <Icon name={COMMUNITY_ICON[community.id]} size={64} style={styles.emptyEmoji} />
                 <Text style={styles.emptyTitle}>{t('communityEmpty')}</Text>
                 <Text style={styles.emptySub}>{t('communityEmptySub')}</Text>
               </View>
@@ -508,7 +509,7 @@ export default function CommunityDetailScreen({ navigation, route }: Props) {
                   onPress={() => setDatePickerVisible(true)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.dateBtnIcon}>📅</Text>
+                  <Icon name="ui-calendar" size={16} tintColor={Colors.primary} />
                   <Text style={[styles.dateBtnText, !eventDate && styles.dateBtnPlaceholder]}>
                     {eventDate
                       ? eventDate.toLocaleDateString(
@@ -716,8 +717,8 @@ function PostCard({ post, lang, userId, commentCount, communityColor, onPress, o
       </View>
       <Text style={cardStyles.title}>{post.title}</Text>
       <View style={cardStyles.chipRow}>
-        {post.event_date ? <View style={cardStyles.chip}><Text style={cardStyles.chipIcon}>📅</Text><Text style={cardStyles.chipText}>{post.event_date}</Text></View> : null}
-        {post.location ? <View style={cardStyles.chip}><Text style={cardStyles.chipIcon}>📍</Text><Text style={cardStyles.chipText}>{post.location}</Text></View> : null}
+        {post.event_date ? <View style={cardStyles.chip}><Icon name="ui-calendar" size={13} tintColor={Colors.text.secondary} /><Text style={cardStyles.chipText}>{post.event_date}</Text></View> : null}
+        {post.location ? <View style={cardStyles.chip}><Icon name="ui-pin" size={13} tintColor={Colors.text.secondary} /><Text style={cardStyles.chipText}>{post.location}</Text></View> : null}
       </View>
       {post.description ? <Text style={cardStyles.description} numberOfLines={3}>{post.description}</Text> : null}
       {photos.length > 0 && (
@@ -746,7 +747,7 @@ const styles = StyleSheet.create({
   headerBtn: { width: 36, alignItems: 'center' },
   backArrow: { fontSize: 30, color: Colors.white, lineHeight: 32 },
   headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  headerEmoji: { fontSize: 20 },
+  headerEmoji: { marginRight: 2 },
   headerTitle: { fontSize: 17, fontWeight: '800', color: Colors.white, flexShrink: 1 },
   headerRight: { flexDirection: 'row', gap: 8 },
   iconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
@@ -763,7 +764,7 @@ const styles = StyleSheet.create({
   // 리스트
   list: { padding: 16, paddingBottom: 110 },
   emptyWrap: { alignItems: 'center', marginTop: 60, paddingHorizontal: 40 },
-  emptyEmoji: { fontSize: 48, marginBottom: 16 },
+  emptyEmoji: { marginBottom: 16 },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: Colors.text.primary, marginBottom: 8, textAlign: 'center' },
   emptySub: { fontSize: 13, color: Colors.text.secondary, textAlign: 'center', marginTop: 4 },
 
@@ -823,7 +824,6 @@ const styles = StyleSheet.create({
   textArea: { height: 90, paddingTop: 13 },
   dateRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 8 },
   dateBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: Colors.border, borderRadius: 10, paddingVertical: 13, paddingHorizontal: 13, backgroundColor: Colors.background },
-  dateBtnIcon: { fontSize: 16 },
   dateBtnText: { fontSize: 15, color: Colors.text.primary, flex: 1 },
   dateBtnPlaceholder: { color: Colors.text.light },
   dateClearBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: Colors.border, alignItems: 'center', justifyContent: 'center' },
@@ -856,7 +856,6 @@ const cardStyles = StyleSheet.create({
   title: { fontSize: 17, fontWeight: '700', color: Colors.text.primary, marginBottom: 10, lineHeight: 24 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
   chip: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.background, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, gap: 4 },
-  chipIcon: { fontSize: 13 },
   chipText: { fontSize: 13, color: Colors.text.secondary, fontWeight: '500' },
   description: { fontSize: 14, color: Colors.text.secondary, lineHeight: 21, marginBottom: 12 },
   photoScroll: { marginTop: 4, marginBottom: 12 },

@@ -16,6 +16,7 @@ import { MoreStackParamList } from '../types';
 import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Offering'>;
 
@@ -171,7 +172,7 @@ export default function OfferingScreen({ navigation }: Props) {
 
         {/* 하단 안내 */}
         <View style={styles.noteRow}>
-          <Text style={styles.noteIcon}>✉️</Text>
+          <Icon name="ui-mail" size={16} tintColor={Colors.text.secondary} style={styles.noteIcon} />
           <Text style={styles.noteText}>{t('offeringContactNote')}</Text>
         </View>
       </ScrollView>
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  noteIcon: { fontSize: 16, marginTop: 1 },
+  noteIcon: { marginTop: 1 },
   noteText: {
     flex: 1,
     fontSize: 13,

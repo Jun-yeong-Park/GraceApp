@@ -20,6 +20,7 @@ import { MoreStackParamList } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 import { checkContentFilter } from '../utils/moderation';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Prayer'>;
@@ -129,7 +130,7 @@ export default function PrayerScreen({ navigation }: Props) {
             </View>
           ) : prayers.length === 0 ? (
             <View style={styles.emptyBox}>
-              <Text style={styles.emptyEmoji}>🙏</Text>
+              <Icon name="action-prayer" size={56} tintColor={Colors.text.light} />
               <Text style={styles.emptyText}>{t('prayerEmptyList')}</Text>
             </View>
           ) : (
@@ -171,7 +172,7 @@ export default function PrayerScreen({ navigation }: Props) {
         {!isAdmin && (
           submitted ? (
             <View style={styles.successBox}>
-              <Text style={styles.successEmoji}>🙏</Text>
+              <Icon name="action-prayer" size={72} tintColor={Colors.primary} style={styles.successEmoji} />
               <Text style={styles.successTitle}>{t('prayerSuccessTitle')}</Text>
               <Text style={styles.successSub}>{t('prayerSuccessSub')}</Text>
               <TouchableOpacity style={styles.anotherBtn} onPress={() => setSubmitted(false)}>
@@ -258,7 +259,6 @@ const styles = StyleSheet.create({
   headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '700', color: Colors.primary },
   loadingBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  emptyEmoji: { fontSize: 48 },
   emptyText: { fontSize: 15, color: Colors.text.secondary },
   list: { padding: 16, gap: 12 },
   card: {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     flex: 1, alignItems: 'center', justifyContent: 'center',
     padding: 32, gap: 12,
   },
-  successEmoji: { fontSize: 64, marginBottom: 8 },
+  successEmoji: { marginBottom: 8 },
   successTitle: { fontSize: 20, fontWeight: '800', color: Colors.primary, textAlign: 'center' },
   successSub: { fontSize: 14, color: Colors.text.secondary, textAlign: 'center', lineHeight: 22 },
   anotherBtn: {

@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MoreStackParamList } from '../types';
 import { Colors } from '../utils/colors';
+import Icon from '../components/Icon';
 import { useLanguage } from '../context/LanguageContext';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'MemberDetail'>;
@@ -117,7 +118,7 @@ export default function MemberDetailScreen({ navigation, route }: Props) {
               {member.birthday && <View style={styles.divider} />}
               <View style={styles.infoRow}>
                 <View style={styles.infoIconWrap}>
-                  <Text style={styles.infoEmoji}>📞</Text>
+                  <Icon name="ui-phone" size={18} tintColor={Colors.primary} />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>{t('phone', lang)}</Text>
@@ -136,7 +137,7 @@ export default function MemberDetailScreen({ navigation, route }: Props) {
               {(member.birthday || member.phone) && <View style={styles.divider} />}
               <View style={styles.infoRow}>
                 <View style={styles.infoIconWrap}>
-                  <Text style={styles.infoEmoji}>✉️</Text>
+                  <Icon name="ui-mail" size={18} tintColor={Colors.primary} />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>{t('email', lang)}</Text>

@@ -15,6 +15,7 @@ import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { TranslationKey } from '../i18n/translations';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 
 type Props = NativeStackScreenProps<WorshipStackParamList, 'WorshipMain'>;
 
@@ -127,7 +128,7 @@ export default function WorshipScreen({ navigation }: Props) {
             <Image source={thumbnail ? { uri: thumbnail } : undefined} style={styles.thumbnail} resizeMode="cover" />
             <View style={styles.playOverlay}>
               <View style={styles.playBtn}>
-                <Text style={styles.playIcon}>▶</Text>
+                <Icon name="ui-play" size={44} tintColor={Colors.white} />
               </View>
             </View>
           </View>
@@ -242,7 +243,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     alignItems: 'center', justifyContent: 'center',
   },
-  playIcon: { color: Colors.white, fontSize: 14, marginLeft: 3 },
   sermonInfo: { flex: 1, padding: 14, justifyContent: 'center', gap: 6 },
   sermonTitle: { fontSize: 14, fontWeight: '700', color: Colors.text.primary, lineHeight: 20 },
   watchLabel: { fontSize: 12, color: Colors.primary, fontWeight: '600' },

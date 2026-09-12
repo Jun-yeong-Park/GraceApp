@@ -28,6 +28,7 @@ import {
   banUser,
   PendingReport,
 } from '../utils/moderation';
+import Icon, { IconName } from '../components/Icon';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Admin'>;
 type AdminTab = 'moderation' | 'approvals' | 'prayer' | 'visit' | 'announcements' | 'bulletins' | 'members' | 'settings' | 'events';
@@ -814,16 +815,16 @@ export default function AdminScreen({ navigation }: Props) {
       )
     : members;
 
-  const TABS: { key: AdminTab; label: string; emoji: string; badge?: number }[] = [
-    { key: 'moderation',    label: lang === 'en' ? 'Moderation'    : lang === 'es' ? 'Moderación'   : '신고관리', emoji: '🛡️', badge: reports.length || undefined },
+  const TABS: { key: AdminTab; label: string; emoji: string; icon?: IconName; badge?: number }[] = [
+    { key: 'moderation',    label: lang === 'en' ? 'Moderation'    : lang === 'es' ? 'Moderación'   : '신고관리', emoji: '🛡️', icon: 'admin-moderation', badge: reports.length || undefined },
     { key: 'approvals',     label: lang === 'en' ? 'Approvals'     : lang === 'es' ? 'Aprobaciones' : '가입승인', emoji: '✅', badge: pending.length || undefined },
-    { key: 'prayer',        label: lang === 'en' ? 'Prayer'        : lang === 'es' ? 'Oración'      : '기도요청', emoji: '🙏' },
-    { key: 'visit',         label: lang === 'en' ? 'Visits'        : lang === 'es' ? 'Visitas'      : '심방요청', emoji: '🏠' },
-    { key: 'announcements', label: lang === 'en' ? 'Announcements' : lang === 'es' ? 'Avisos'       : '공지사항', emoji: '📢' },
-    { key: 'bulletins',     label: lang === 'en' ? 'Bulletins'     : lang === 'es' ? 'Boletines'    : '주보관리', emoji: '📋' },
-    { key: 'events',        label: lang === 'en' ? 'Events'        : lang === 'es' ? 'Eventos'      : '일정관리', emoji: '📅' },
-    { key: 'members',       label: lang === 'en' ? 'Members'       : lang === 'es' ? 'Miembros'     : '회원관리', emoji: '👥' },
-    { key: 'settings',      label: lang === 'en' ? 'Settings'      : lang === 'es' ? 'Ajustes'      : '앱설정',   emoji: '⚙️' },
+    { key: 'prayer',        label: lang === 'en' ? 'Prayer'        : lang === 'es' ? 'Oración'      : '기도요청', emoji: '🙏', icon: 'admin-prayer' },
+    { key: 'visit',         label: lang === 'en' ? 'Visits'        : lang === 'es' ? 'Visitas'      : '심방요청', emoji: '🏠', icon: 'admin-visits' },
+    { key: 'announcements', label: lang === 'en' ? 'Announcements' : lang === 'es' ? 'Avisos'       : '공지사항', emoji: '📢', icon: 'admin-announce' },
+    { key: 'bulletins',     label: lang === 'en' ? 'Bulletins'     : lang === 'es' ? 'Boletines'    : '주보관리', emoji: '📋', icon: 'admin-bulletins' },
+    { key: 'events',        label: lang === 'en' ? 'Events'        : lang === 'es' ? 'Eventos'      : '일정관리', emoji: '📅', icon: 'admin-events' },
+    { key: 'members',       label: lang === 'en' ? 'Members'       : lang === 'es' ? 'Miembros'     : '회원관리', emoji: '👥', icon: 'admin-members' },
+    { key: 'settings',      label: lang === 'en' ? 'Settings'      : lang === 'es' ? 'Ajustes'      : '앱설정',   emoji: '⚙️', icon: 'admin-settings' },
   ];
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -857,7 +858,9 @@ export default function AdminScreen({ navigation }: Props) {
             onPress={() => setTab(item.key)}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text style={styles.tabEmoji}>{item.emoji}</Text>
+              {item.icon
+                ? <Icon name={item.icon} size={20} tintColor={tab === item.key ? Colors.primary : Colors.text.light} />
+                : <Text style={styles.tabEmoji}>{item.emoji}</Text>}
               {item.badge ? (
                 <View style={styles.tabBadge}>
                   <Text style={styles.tabBadgeText}>{item.badge}</Text>
@@ -1310,7 +1313,7 @@ export default function AdminScreen({ navigation }: Props) {
                       {item.description ? <Text style={styles.eventDesc}>{item.description}</Text> : null}
                     </View>
                     <TouchableOpacity onPress={() => deleteEvent(item.id)} hitSlop={8}>
-                      <Text style={styles.deleteIcon}>🗑</Text>
+                      <Icon name="more-delete" size={18} tintColor="#DC2626" />
                     </TouchableOpacity>
                   </View>
                 </View>

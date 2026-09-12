@@ -14,6 +14,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MoreStackParamList, Member } from '../types';
 import { Colors } from '../utils/colors';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 // (login form removed — login is handled in MoreScreen)
@@ -107,7 +108,7 @@ export default function DirectoryScreen({ navigation }: Props) {
         <View style={styles.loginWrap}>
           <View style={styles.loginCard}>
             <View style={styles.loginIconWrap}>
-              <Text style={styles.loginIcon}>📒</Text>
+              <Icon name="more-directory" size={44} tintColor={Colors.primary} />
             </View>
             <Text style={styles.loginTitle}>{t('title', lang)}</Text>
             <Text style={styles.loginDesc}>{t('loginRequired', lang)}</Text>
@@ -150,7 +151,7 @@ export default function DirectoryScreen({ navigation }: Props) {
       {/* 검색 바 */}
       <View style={styles.searchWrap}>
         <View style={styles.searchBar}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          <Icon name="ui-search" size={16} tintColor={Colors.text.light} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder={t('search', lang)}
@@ -199,7 +200,7 @@ export default function DirectoryScreen({ navigation }: Props) {
           )}
           ListEmptyComponent={
             <View style={styles.center}>
-              <Text style={styles.emptyEmoji}>📒</Text>
+              <Icon name="more-directory" size={48} tintColor={Colors.text.light} style={styles.emptyEmoji} />
               <Text style={styles.emptyText}>
                 {query ? t('emptySearch', lang) : t('empty', lang)}
               </Text>
@@ -251,7 +252,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
   },
-  loginIcon: { fontSize: 36 },
   loginTitle: { fontSize: 22, fontWeight: '800', color: Colors.primary, marginBottom: 8 },
   loginDesc: {
     fontSize: 14,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
-  searchIcon: { fontSize: 16, marginRight: 8 },
+  searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, fontSize: 14, color: Colors.text.primary },
 
   // 목록
@@ -321,6 +321,6 @@ const styles = StyleSheet.create({
   // 상태
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, gap: 10 },
   loadingText: { fontSize: 14, color: Colors.text.secondary },
-  emptyEmoji: { fontSize: 42, marginBottom: 4 },
+  emptyEmoji: { marginBottom: 4 },
   emptyText: { fontSize: 15, color: Colors.text.secondary, fontWeight: '600' },
 });

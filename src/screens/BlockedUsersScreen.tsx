@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MoreTabParamList } from '../types';
 import { Colors } from '../utils/colors';
+import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchBlockedUsersDetailed, unblockUser, BlockedUserRow } from '../utils/moderation';
@@ -97,7 +98,7 @@ export default function BlockedUsersScreen({ navigation }: Props) {
         </View>
       ) : rows.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.emptyEmoji}>🚫</Text>
+          <Icon name="more-blocked" size={56} tintColor={Colors.text.light} />
           <Text style={styles.emptyText}>{T.empty[l]}</Text>
           <Text style={styles.emptySub}>{T.emptySub[l]}</Text>
         </View>

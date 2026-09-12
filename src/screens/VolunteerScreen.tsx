@@ -20,6 +20,7 @@ import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 import { checkContentFilter } from '../utils/moderation';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Volunteer'>;
@@ -267,11 +268,11 @@ export default function VolunteerScreen({ navigation }: Props) {
 
         <Text style={styles.cardTitle}>{item.title}</Text>
         <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>📅</Text>
+          <Icon name="ui-calendar" size={13} tintColor={Colors.text.secondary} />
           <Text style={styles.infoText}>{item.date} {item.time || t('timeTbd')}</Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>📍</Text>
+          <Icon name="ui-pin" size={13} tintColor={Colors.text.secondary} />
           <Text style={styles.infoText}>{item.location || t('locationTbd')}</Text>
         </View>
         {!!item.description && (
@@ -552,7 +553,6 @@ const styles = StyleSheet.create({
   deleteBtnText: { fontSize: 16 },
   cardTitle: { fontSize: 17, fontWeight: '800', color: Colors.text.primary, marginBottom: 8 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  infoIcon: { fontSize: 13 },
   infoText: { fontSize: 13, color: Colors.text.secondary },
   cardDesc: { fontSize: 13, color: Colors.text.secondary, lineHeight: 20, marginTop: 8, marginBottom: 12 },
   rolesSection: {

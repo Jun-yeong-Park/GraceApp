@@ -20,6 +20,7 @@ import { Colors } from '../utils/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'SermonSummary'>;
 
@@ -252,7 +253,7 @@ export default function SermonSummaryScreen({ navigation }: Props) {
         </View>
       ) : summaries.length === 0 ? (
         <View style={styles.emptyBox}>
-          <Text style={styles.emptyEmoji}>📖</Text>
+          <Icon name="tab-bible" size={56} tintColor={Colors.text.light} />
           <Text style={styles.emptyText}>
             {lang === 'en' ? 'No sermon summaries yet' : lang === 'es' ? 'Sin resúmenes aún' : '등록된 설교 요약이 없습니다'}
           </Text>

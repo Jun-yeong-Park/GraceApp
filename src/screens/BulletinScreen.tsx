@@ -14,6 +14,7 @@ import { Colors } from '../utils/colors';
 import { Bulletin, BulletinStackParamList } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../services/supabase';
+import Icon from '../components/Icon';
 
 type Props = NativeStackScreenProps<BulletinStackParamList, 'BulletinList'>;
 
@@ -126,7 +127,7 @@ export default function BulletinScreen({ navigation }: Props) {
         }}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>📋</Text>
+            <Icon name="admin-bulletins" size={56} tintColor={Colors.text.light} />
             <Text style={styles.emptyText}>{t('bulletinEmpty')}</Text>
           </View>
         }
