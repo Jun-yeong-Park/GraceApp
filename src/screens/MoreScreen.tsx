@@ -24,6 +24,7 @@ import { Language, translations } from '../i18n/translations';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 import { enablePush, disablePush, refreshPushIfEnabled } from '../utils/push';
+import * as Device from 'expo-device';
 import Icon, { IconName } from '../components/Icon';
 
 type Props = NativeStackScreenProps<MoreTabParamList, 'MoreMain'>;
@@ -221,7 +222,7 @@ export default function MoreScreen({ navigation, route }: Props) {
       if (val) {
         const ok = await enablePush({ userId: user?.id ?? null, lang });
         if (!ok) {
-          Alert.alert('', Platform.OS === 'ios' || Platform.OS === 'android' ? lu('notifDenied', l) : lu('notifSimulator', l));
+          Alert.alert('', Device.isDevice ? lu('notifDenied', l) : lu('notifSimulator', l));
           setNotifEnabled(false);
           await AsyncStorage.setItem(NOTIF_KEY, 'false');
           return;
