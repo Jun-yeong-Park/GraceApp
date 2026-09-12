@@ -261,7 +261,7 @@ export default function VolunteerScreen({ navigation }: Props) {
           )}
           {isAdmin && (
             <TouchableOpacity style={styles.deleteBtn} onPress={() => confirmDelete(item)}>
-              <Text style={styles.deleteBtnText}>🗑</Text>
+              <Icon name="more-delete" size={18} tintColor="#DC2626" />
             </TouchableOpacity>
           )}
         </View>

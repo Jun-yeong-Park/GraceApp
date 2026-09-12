@@ -154,7 +154,7 @@ export default function PrayerScreen({ navigation }: Props) {
                     <View style={styles.cardHeaderRight}>
                       <Text style={styles.cardDate}>{formatRelative(item.created_at)}</Text>
                       <TouchableOpacity onPress={() => deletePrayer(item.id)} style={styles.deleteBtn}>
-                        <Text style={styles.deleteBtnText}>🗑</Text>
+                        <Icon name="more-delete" size={18} tintColor="#DC2626" />
                       </TouchableOpacity>
                     </View>
                   </View>

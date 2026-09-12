@@ -279,7 +279,7 @@ export default function SermonSummaryScreen({ navigation }: Props) {
                     onPress={() => deleteSummary(item.id, item.title_ko)}
                     style={styles.deleteBtn}
                   >
-                    <Text style={styles.deleteBtnText}>🗑</Text>
+                    <Icon name="more-delete" size={18} tintColor="#DC2626" />
                   </TouchableOpacity>
                 )}
               </View>

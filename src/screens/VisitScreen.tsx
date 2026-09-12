@@ -206,7 +206,7 @@ export default function VisitScreen({ navigation }: Props) {
                           </Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => deleteVisit(item.id)} style={styles.deleteBtn}>
-                          <Text style={styles.deleteBtnText}>🗑</Text>
+                          <Icon name="more-delete" size={18} tintColor="#DC2626" />
                         </TouchableOpacity>
                       </View>
                     </View>
