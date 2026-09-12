@@ -782,7 +782,8 @@ export default function AdminScreen({ navigation }: Props) {
 
   function formatDate(iso: string) {
     const d = new Date(iso);
-    return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+    const locale = lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : 'ko-KR';
+    return d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
   }
 
   // ── Access denied ──────────────────────────────────────────────────────────
@@ -817,7 +818,7 @@ export default function AdminScreen({ navigation }: Props) {
 
   const TABS: { key: AdminTab; label: string; emoji: string; icon?: IconName; badge?: number }[] = [
     { key: 'moderation',    label: lang === 'en' ? 'Moderation'    : lang === 'es' ? 'Moderación'   : '신고관리', emoji: '🛡️', icon: 'admin-moderation', badge: reports.length || undefined },
-    { key: 'approvals',     label: lang === 'en' ? 'Approvals'     : lang === 'es' ? 'Aprobaciones' : '가입승인', emoji: '✅', badge: pending.length || undefined },
+    { key: 'approvals',     label: lang === 'en' ? 'Approvals'     : lang === 'es' ? 'Aprobaciones' : '가입승인', emoji: '✅', icon: 'admin-members', badge: pending.length || undefined },
     { key: 'prayer',        label: lang === 'en' ? 'Prayer'        : lang === 'es' ? 'Oración'      : '기도요청', emoji: '🙏', icon: 'admin-prayer' },
     { key: 'visit',         label: lang === 'en' ? 'Visits'        : lang === 'es' ? 'Visitas'      : '심방요청', emoji: '🏠', icon: 'admin-visits' },
     { key: 'announcements', label: lang === 'en' ? 'Announcements' : lang === 'es' ? 'Avisos'       : '공지사항', emoji: '📢', icon: 'admin-announce' },
@@ -951,7 +952,7 @@ export default function AdminScreen({ navigation }: Props) {
                       <Text style={styles.modActionSoftText}>{lang === 'en' ? '✓ Reviewed' : lang === 'es' ? '✓ Revisado' : '✓ 검토완료'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.modActionDanger} onPress={() => handleDeleteContent(item)}>
-                      <Text style={styles.modActionDangerText}>{lang === 'en' ? '🗑 Remove content' : lang === 'es' ? '🗑 Eliminar' : '🗑 콘텐츠 삭제'}</Text>
+                      <Text style={styles.modActionDangerText}>{lang === 'en' ? 'Remove content' : lang === 'es' ? 'Eliminar' : '콘텐츠 삭제'}</Text>
                     </TouchableOpacity>
                     {item.reported_user_id && !item.reported_user_banned ? (
                       <TouchableOpacity style={styles.modActionBan} onPress={() => handleBanUser(item)}>
@@ -989,7 +990,14 @@ export default function AdminScreen({ navigation }: Props) {
                  : '새로 가입한 분들은 목회자가 승인하기 전까지 여기서 대기합니다. 승인하면 바로 로그인할 수 있습니다.'}
               </Text>
             }
-            ListEmptyComponent={<EmptyView emoji="✅" text={lang === 'en' ? 'No sign-ups waiting for approval.' : lang === 'es' ? 'No hay registros pendientes.' : '승인 대기 중인 가입이 없습니다.'} />}
+            ListEmptyComponent={
+              <View style={{ alignItems: 'center', paddingTop: 48 }}>
+                <Icon name="admin-members" size={56} tintColor={Colors.text.light} />
+                <Text style={[styles.settingsHint, { textAlign: 'center', marginTop: 12 }]}>
+                  {lang === 'en' ? 'No sign-ups waiting for approval.' : lang === 'es' ? 'No hay registros pendientes.' : '승인 대기 중인 가입이 없습니다.'}
+                </Text>
+              </View>
+            }
             renderItem={({ item }) => {
               const busy = pendingBusy === item.id;
               return (
@@ -1042,7 +1050,7 @@ export default function AdminScreen({ navigation }: Props) {
                 </View>
                 <Text style={styles.cardBody}>{item.content}</Text>
                 <TouchableOpacity style={styles.deleteBtn} onPress={() => deletePrayer(item.id)}>
-                  <Text style={styles.deleteBtnText}>{lang === 'en' ? '🗑 Delete' : lang === 'es' ? '🗑 Eliminar' : '🗑 삭제'}</Text>
+                  <Text style={styles.deleteBtnText}>{lang === 'en' ? 'Delete' : lang === 'es' ? 'Eliminar' : '삭제'}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -1089,7 +1097,7 @@ export default function AdminScreen({ navigation }: Props) {
                       </TouchableOpacity>
                     ))}
                     <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteVisit(item.id)}>
-                      <Text style={styles.deleteBtnText}>🗑</Text>
+                      <Icon name="more-delete" size={16} tintColor="#DC2626" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1130,7 +1138,7 @@ export default function AdminScreen({ navigation }: Props) {
                       <Text style={styles.editBtnText}>{lang === 'en' ? '✏️ Edit' : lang === 'es' ? '✏️ Editar' : '✏️ 수정'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteAnnouncement(item.id)}>
-                      <Text style={styles.deleteBtnText}>{lang === 'en' ? '🗑 Delete' : lang === 'es' ? '🗑 Eliminar' : '🗑 삭제'}</Text>
+                      <Text style={styles.deleteBtnText}>{lang === 'en' ? 'Delete' : lang === 'es' ? 'Eliminar' : '삭제'}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1181,7 +1189,7 @@ export default function AdminScreen({ navigation }: Props) {
                         <Text style={styles.editBtnText}>{lang === 'en' ? '✏️ Edit' : lang === 'es' ? '✏️ Editar' : '✏️ 수정'}</Text>
                       </TouchableOpacity>
                       <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteBulletin(item)}>
-                        <Text style={styles.deleteBtnText}>{lang === 'en' ? '🗑 Delete' : lang === 'es' ? '🗑 Eliminar' : '🗑 삭제'}</Text>
+                        <Text style={styles.deleteBtnText}>{lang === 'en' ? 'Delete' : lang === 'es' ? 'Eliminar' : '삭제'}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -1809,7 +1817,8 @@ const styles = StyleSheet.create({
   deniedTitle: { fontSize: 20, fontWeight: '800', color: Colors.primary },
   deniedDesc: { fontSize: 14, color: Colors.text.secondary, textAlign: 'center', lineHeight: 22 },
 
-  tabBarWrap: { backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  // ScrollView 는 기본 flexGrow:1 — 내용이 적은 탭에서 탭바가 세로로 늘어나는 것을 막는다
+  tabBarWrap: { flexGrow: 0, backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.border },
   tabBar: { flexDirection: 'row', paddingHorizontal: 4 },
   tabBtn: {
     paddingHorizontal: 14,

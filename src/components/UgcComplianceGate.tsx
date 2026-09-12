@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Colors } from '../utils/colors';
@@ -27,6 +27,9 @@ export default function UgcComplianceGate() {
 
   const [submitting, setSubmitting] = useState(false);
   const [bannedAlertShown, setBannedAlertShown] = useState(false);
+  // RN Modal 안의 SafeAreaView 는 첫 렌더에서 상단 인셋을 받지 못해 헤더가
+  // 노치 뒤로 들어간다. Provider 에서 직접 읽은 인셋을 패딩으로 준다.
+  const insets = useSafeAreaInsets();
 
   // Banned users: show one native alert, then force sign-out. Only render once
   // per session — the alert queue can otherwise re-fire on every re-render.
@@ -60,7 +63,7 @@ export default function UgcComplianceGate() {
 
   return (
     <Modal visible={showEula} animationType="slide" transparent={false} onRequestClose={() => { /* non-dismissible */ }}>
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={[styles.safe, { paddingTop: insets.top }]} edges={['bottom']}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{T.title[l]}</Text>
           <View style={styles.badge}>
