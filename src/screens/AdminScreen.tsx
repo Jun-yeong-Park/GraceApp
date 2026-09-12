@@ -798,7 +798,7 @@ export default function AdminScreen({ navigation }: Props) {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.denied}>
-          <Text style={styles.deniedEmoji}>🔒</Text>
+          <Icon name="more-privacy" size={56} tintColor={Colors.text.light} />
           <Text style={styles.deniedTitle}>{lang === 'en' ? 'Pastors Only' : lang === 'es' ? 'Solo Pastores' : '목회자 전용'}</Text>
           <Text style={styles.deniedDesc}>
             {lang === 'en' ? 'This page is only accessible to pastors and ministers.' : lang === 'es' ? 'Esta página solo es accesible para pastores y ministros.' : '이 페이지는 목사 및 전도사만 접근할 수 있습니다.'}{'\n'}
@@ -965,7 +965,7 @@ export default function AdminScreen({ navigation }: Props) {
             }}
             ListEmptyComponent={
               <EmptyView
-                emoji="🛡️"
+                emoji="🛡️" icon="admin-moderation"
                 text={lang === 'en' ? 'No pending reports. All caught up!' : lang === 'es' ? 'No hay reportes pendientes. ¡Todo al día!' : '대기 중인 신고가 없습니다. 모두 처리 완료!'}
               />
             }
@@ -1054,7 +1054,7 @@ export default function AdminScreen({ navigation }: Props) {
                 </TouchableOpacity>
               </View>
             )}
-            ListEmptyComponent={<EmptyView emoji="🙏" text={lang === 'en' ? 'No prayer requests.' : lang === 'es' ? 'No hay peticiones de oración.' : '기도요청이 없습니다.'} />}
+            ListEmptyComponent={<EmptyView emoji="🙏" icon="admin-prayer" text={lang === 'en' ? 'No prayer requests.' : lang === 'es' ? 'No hay peticiones de oración.' : '기도요청이 없습니다.'} />}
           />
         )
       )}
@@ -1103,7 +1103,7 @@ export default function AdminScreen({ navigation }: Props) {
                 </View>
               );
             }}
-            ListEmptyComponent={<EmptyView emoji="🏠" text={lang === 'en' ? 'No visit requests.' : lang === 'es' ? 'No hay solicitudes de visita.' : '심방요청이 없습니다.'} />}
+            ListEmptyComponent={<EmptyView emoji="🏠" icon="admin-visits" text={lang === 'en' ? 'No visit requests.' : lang === 'es' ? 'No hay solicitudes de visita.' : '심방요청이 없습니다.'} />}
           />
         )
       )}
@@ -1144,7 +1144,7 @@ export default function AdminScreen({ navigation }: Props) {
                 </View>
                 );
               }}
-              ListEmptyComponent={<EmptyView emoji="📢" text={lang === 'en' ? 'No announcements.' : lang === 'es' ? 'No hay avisos.' : '공지사항이 없습니다.'} />}
+              ListEmptyComponent={<EmptyView emoji="📢" icon="admin-announce" text={lang === 'en' ? 'No announcements.' : lang === 'es' ? 'No hay avisos.' : '공지사항이 없습니다.'} />}
             />
           )}
         </>
@@ -1195,7 +1195,7 @@ export default function AdminScreen({ navigation }: Props) {
                   </View>
                 );
               }}
-              ListEmptyComponent={<EmptyView emoji="📋" text={lang === 'en' ? 'No bulletins registered.' : lang === 'es' ? 'No hay boletines registrados.' : '등록된 주보가 없습니다.'} />}
+              ListEmptyComponent={<EmptyView emoji="📋" icon="admin-bulletins" text={lang === 'en' ? 'No bulletins registered.' : lang === 'es' ? 'No hay boletines registrados.' : '등록된 주보가 없습니다.'} />}
             />
           )}
         </>
@@ -1285,7 +1285,7 @@ export default function AdminScreen({ navigation }: Props) {
                   </TouchableOpacity>
                 );
               }}
-              ListEmptyComponent={<EmptyView emoji="👥" text={lang === 'en' ? 'No members.' : lang === 'es' ? 'No hay miembros.' : '회원이 없습니다.'} />}
+              ListEmptyComponent={<EmptyView emoji="👥" icon="admin-members" text={lang === 'en' ? 'No members.' : lang === 'es' ? 'No hay miembros.' : '회원이 없습니다.'} />}
             />
           )}
         </>
@@ -1326,7 +1326,7 @@ export default function AdminScreen({ navigation }: Props) {
                   </View>
                 </View>
               )}
-              ListEmptyComponent={<EmptyView emoji="📅" text={lang === 'en' ? 'No events registered.' : lang === 'es' ? 'No hay eventos registrados.' : '등록된 일정이 없습니다.'} />}
+              ListEmptyComponent={<EmptyView emoji="📅" icon="admin-events" text={lang === 'en' ? 'No events registered.' : lang === 'es' ? 'No hay eventos registrados.' : '등록된 일정이 없습니다.'} />}
             />
           )}
         </>
@@ -1778,10 +1778,12 @@ function LoadingView() {
   );
 }
 
-function EmptyView({ emoji, text }: { emoji: string; text: string }) {
+function EmptyView({ emoji, icon, text }: { emoji: string; icon?: IconName; text: string }) {
   return (
     <View style={styles.center}>
-      <Text style={{ fontSize: 40, marginBottom: 8 }}>{emoji}</Text>
+      {icon
+        ? <Icon name={icon} size={48} tintColor={Colors.text.light} style={{ marginBottom: 10 }} />
+        : <Text style={{ fontSize: 40, marginBottom: 8 }}>{emoji}</Text>}
       <Text style={{ fontSize: 15, color: Colors.text.secondary }}>{text}</Text>
     </View>
   );
@@ -1813,7 +1815,6 @@ const styles = StyleSheet.create({
   pastorBadgeText: { fontSize: 10, fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
 
   denied: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, gap: 12 },
-  deniedEmoji: { fontSize: 56 },
   deniedTitle: { fontSize: 20, fontWeight: '800', color: Colors.primary },
   deniedDesc: { fontSize: 14, color: Colors.text.secondary, textAlign: 'center', lineHeight: 22 },
 

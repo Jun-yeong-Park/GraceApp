@@ -61,8 +61,8 @@ export const translations = {
 
     // Prayer
     prayerTitle: '기도 · 심방',
-    prayerTab: '🙏 기도요청',
-    visitTab: '🏠 심방요청',
+    prayerTab: '기도요청',
+    visitTab: '심방요청',
     addPrayer: '+ 기도제목 올리기',
     addVisit: '+ 심방요청 하기',
     emptyPrayer: '아직 기도요청이 없습니다.',
@@ -372,8 +372,8 @@ export const translations = {
 
     // Prayer
     prayerTitle: 'Prayer & Visits',
-    prayerTab: '🙏 Prayer Requests',
-    visitTab: '🏠 Visit Requests',
+    prayerTab: 'Prayer Requests',
+    visitTab: 'Visit Requests',
     addPrayer: '+ Post Prayer Request',
     addVisit: '+ Request a Visit',
     emptyPrayer: 'No prayer requests yet.',
@@ -683,8 +683,8 @@ export const translations = {
 
     // Prayer
     prayerTitle: 'Oración y Visitas',
-    prayerTab: '🙏 Peticiones de Oración',
-    visitTab: '🏠 Solicitudes de Visita',
+    prayerTab: 'Peticiones de Oración',
+    visitTab: 'Solicitudes de Visita',
     addPrayer: '+ Publicar Petición',
     addVisit: '+ Solicitar Visita',
     emptyPrayer: 'No hay peticiones de oración aún.',
