@@ -49,16 +49,16 @@ async function getExpoPushToken(): Promise<string | null> {
 export async function enablePush(params: { userId: string | null; lang: string }): Promise<boolean> {
   const token = await getExpoPushToken();
   if (!token) return false;
-  const { error } = await supabase.from('push_tokens').upsert(
-    {
-      token,
-      user_id: params.userId,
-      platform: Platform.OS,
-      lang: params.lang,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'token' },
-  );
+  // upsert 는 SELECT 정책을 요구하는데 push_tokens 는 토큰 노출을 막기 위해
+  // SELECT 를 열지 않는다. 대신 같은 토큰 행을 지우고 다시 넣는다.
+  await supabase.from('push_tokens').delete().eq('token', token);
+  const { error } = await supabase.from('push_tokens').insert({
+    token,
+    user_id: params.userId,
+    platform: Platform.OS,
+    lang: params.lang,
+    updated_at: new Date().toISOString(),
+  });
   if (error) return false;
   await AsyncStorage.setItem(TOKEN_KEY, token);
   return true;
