@@ -18,7 +18,8 @@ function getDeepRouteName(routeState: any): string {
   return route.name as string;
 }
 
-const HIDE_TAB_ROUTES = new Set(['CommunityChat']);
+// 하단 입력창이 있는 화면 — 떠 있는 탭바가 입력창을 가리므로 숨긴다.
+const HIDE_TAB_ROUTES = new Set(['CommunityChat', 'CommunityPostDetail']);
 
 const TAB_ICONS: Record<TabName, IconName> = {
   Home:         'tab-home',

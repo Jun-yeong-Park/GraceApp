@@ -145,7 +145,7 @@ export default function CommunityScreen({ navigation }: Props) {
       {!user ? (
         /* ── 로그인 게이트 (App Store Guideline 1.2) ── */
         <View style={styles.gateWrap}>
-          <Text style={styles.gateEmoji}>🔒</Text>
+          <Icon name="more-privacy" size={56} tintColor={Colors.text.light} style={styles.gateEmoji} />
           <Text style={styles.gateTitle}>{GATE.title[g]}</Text>
           <Text style={styles.gateBody}>{GATE.body[g]}</Text>
           <TouchableOpacity style={styles.gateBtn} onPress={goToLogin} activeOpacity={0.85}>
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingBottom: 110,
   },
-  gateEmoji: { fontSize: 44, marginBottom: 16 },
+  gateEmoji: { marginBottom: 16 },
   gateTitle: {
     fontSize: 18,
     fontWeight: '800',
