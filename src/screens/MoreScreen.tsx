@@ -539,7 +539,7 @@ export default function MoreScreen({ navigation, route }: Props) {
           </>
         )}
 
-        <Text style={styles.version}>Sunlight Grace Church · v1.0{'\n'}Orlando, FL</Text>
+        <Text style={styles.version}>Sunlight Grace Church · v1.1.0{'\n'}Orlando, FL</Text>
       </ScrollView>
 
       {/* ── 이름 변경 모달 ── */}
