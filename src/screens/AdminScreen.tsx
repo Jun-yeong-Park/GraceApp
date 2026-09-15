@@ -1401,7 +1401,7 @@ export default function AdminScreen({ navigation }: Props) {
 
             {/* ── 최근 설교 영상 ── */}
             <Text style={styles.settingsSection}>{lang === 'en' ? '▶ Latest Sermon Video' : lang === 'es' ? '▶ Video del Último Sermón' : '▶ 최근 설교 영상'}</Text>
-            <Text style={styles.settingsHint}>{lang === 'en' ? 'YouTube link shown at the top of the Worship tab. Leave blank to use the default.' : lang === 'es' ? 'Enlace de YouTube que se muestra en la pestaña Culto. Déjelo vacío para usar el predeterminado.' : '예배 탭 상단에 표시되는 YouTube 링크입니다. 비워두면 기본 영상이 표시됩니다.'}</Text>
+            <Text style={styles.settingsHint}>{lang === 'en' ? 'Leave blank and the Worship tab automatically shows the newest Sunday service from the church YouTube channel. Paste a link here only to pin a specific video.' : lang === 'es' ? 'Déjelo vacío y la pestaña Culto mostrará automáticamente el culto más reciente del canal de YouTube. Pegue un enlace solo para fijar un video específico.' : '비워두면 예배 탭에 교회 유튜브 채널의 최신 주일예배가 자동으로 표시됩니다. 특정 영상을 고정하고 싶을 때만 링크를 붙여넣으세요.'}</Text>
             <View style={styles.settingsCard}>
               <TextInput
                 style={[styles.input, { marginBottom: 0 }]}

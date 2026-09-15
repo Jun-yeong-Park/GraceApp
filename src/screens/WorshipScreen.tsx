@@ -90,16 +90,23 @@ export default function WorshipScreen({ navigation }: Props) {
   const videoId = youtubeVideoId(sermonUrl);
   const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined;
 
+  // 우선순위: 관리자가 앱설정에 넣은 링크 → 채널 최신 주일예배(Edge Function) → 기본 영상
   useEffect(() => {
-    supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', 'latest_sermon_url')
-      .maybeSingle()
-      .then(({ data }) => {
-        const v = typeof data?.value === 'string' ? data.value.trim() : '';
-        if (v && youtubeVideoId(v)) setSermonUrl(v);
-      }, () => {});
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'latest_sermon_url')
+        .maybeSingle();
+      const manual = typeof data?.value === 'string' ? data.value.trim() : '';
+      if (manual && youtubeVideoId(manual)) { if (!cancelled) setSermonUrl(manual); return; }
+
+      const { data: latest } = await supabase.functions.invoke<{ url?: string }>('latest-sermon');
+      const auto = latest?.url ?? '';
+      if (!cancelled && auto && youtubeVideoId(auto)) setSermonUrl(auto);
+    })().catch(() => { /* 기본 영상 유지 */ });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
