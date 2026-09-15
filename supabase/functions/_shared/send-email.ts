@@ -8,7 +8,7 @@ const RESEND_API = 'https://api.resend.com/emails';
 const SENDER = 'Grace Church Moderation <onboarding@resend.dev>';
 
 export async function sendModerationEmail(params: {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
 }): Promise<{ ok: boolean; status: number; body: string }> {
@@ -25,7 +25,7 @@ export async function sendModerationEmail(params: {
     },
     body: JSON.stringify({
       from: SENDER,
-      to: [params.to],
+      to: Array.isArray(params.to) ? params.to : [params.to],
       subject: params.subject,
       html: params.html,
     }),
