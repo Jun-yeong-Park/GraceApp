@@ -28,7 +28,8 @@ import {
   banUser,
   PendingReport,
 } from '../utils/moderation';
-import Icon, { IconName } from '../components/Icon';
+import Icon, { IconName, COMMUNITY_ICON } from '../components/Icon';
+import { COMMUNITIES, getCommunityName } from './CommunityScreen';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Admin'>;
 type AdminTab = 'moderation' | 'approvals' | 'prayer' | 'visit' | 'announcements' | 'bulletins' | 'members' | 'settings' | 'events';
@@ -334,7 +335,7 @@ export default function AdminScreen({ navigation }: Props) {
     try {
       const { data } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role, created_at')
+        .select('id, full_name, email, role, community_id, created_at')
         .order('created_at', { ascending: true });
       if (data) {
         const sorted = [...data].sort((a, b) => {
@@ -682,6 +683,26 @@ export default function AdminScreen({ navigation }: Props) {
         },
       ]
     );
+  }
+
+  // 소속 공동체 배정 — 회원은 이 공동체의 게시물·사진·채팅만 볼 수 있다
+  function changeCommunity(member: Profile) {
+    const current = COMMUNITIES.find(c => c.id === member.community_id);
+    Alert.alert(
+      `${member.full_name}`,
+      lang === 'en' ? `Community: ${current ? getCommunityName(current, lang) : 'none'}\nAssign to:` : lang === 'es' ? `Comunidad: ${current ? getCommunityName(current, lang) : 'ninguna'}\nAsignar a:` : `소속 공동체: ${current ? getCommunityName(current, lang) : '없음'}\n배정할 공동체:`,
+      [
+        { text: lang === 'en' ? 'Cancel' : lang === 'es' ? 'Cancelar' : '취소', style: 'cancel' },
+        ...COMMUNITIES.map(c => ({ text: getCommunityName(c, lang), onPress: () => updateCommunity(member.id, c.id) })),
+        { text: lang === 'en' ? 'Remove from community' : lang === 'es' ? 'Quitar de la comunidad' : '공동체 해제', style: 'destructive' as const, onPress: () => updateCommunity(member.id, null) },
+      ]
+    );
+  }
+
+  async function updateCommunity(memberId: string, communityId: string | null) {
+    const { error } = await supabase.from('profiles').update({ community_id: communityId }).eq('id', memberId);
+    if (error) { Alert.alert(lang === 'en' ? 'Error' : lang === 'es' ? 'Error' : '오류', error.message); return; }
+    setMembers(prev => prev.map(m => m.id === memberId ? { ...m, community_id: communityId } : m));
   }
 
   async function updateRole(memberId: string, newRole: UserRole) {
@@ -1261,6 +1282,19 @@ export default function AdminScreen({ navigation }: Props) {
                           <Text style={styles.memberEmail}>{item.email}</Text>
                         ) : null}
                         <Text style={styles.memberJoined}>{lang === 'en' ? 'Joined: ' : lang === 'es' ? 'Registrado: ' : '가입일: '}{formatDate(item.created_at)}</Text>
+                        {(item.role ?? 'member') !== 'pastor' && (() => {
+                          const c = COMMUNITIES.find(x => x.id === item.community_id);
+                          return (
+                            <TouchableOpacity onPress={() => changeCommunity(item)} hitSlop={6} style={{ marginTop: 6, alignSelf: 'flex-start' }}>
+                              <View style={[styles.communityChip, !c && styles.communityChipEmpty]}>
+                                {c && <Icon name={COMMUNITY_ICON[c.id]} size={14} />}
+                                <Text style={[styles.communityChipText, !c && styles.communityChipTextEmpty]}>
+                                  {c ? getCommunityName(c, lang) : (lang === 'en' ? '+ Assign community' : lang === 'es' ? '+ Asignar comunidad' : '+ 공동체 배정')}
+                                </Text>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })()}
                       </View>
                       <View style={{ alignItems: 'flex-end', gap: 6 }}>
                         <View style={[styles.roleBadge, { backgroundColor: roleInfo.color + '18' }]}>
@@ -1936,6 +1970,10 @@ const styles = StyleSheet.create({
   roleBadgeText: { fontSize: 12, fontWeight: '800' },
   inDirBadge: { backgroundColor: '#D1FAE5', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   inDirBadgeText: { fontSize: 10, fontWeight: '700', color: '#065F46' },
+  communityChip: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: Colors.primary + '12', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  communityChipEmpty: { backgroundColor: '#FEF3C7' },
+  communityChipText: { fontSize: 11, fontWeight: '700', color: Colors.primary },
+  communityChipTextEmpty: { color: '#92400E' },
   addDirBtn: { backgroundColor: Colors.primary + '15', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: Colors.primary + '40' },
   addDirBtnText: { fontSize: 10, fontWeight: '700', color: Colors.primary },
 

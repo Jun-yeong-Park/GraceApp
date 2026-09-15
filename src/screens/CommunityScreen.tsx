@@ -87,6 +87,13 @@ const GATE = {
             es: 'Se requiere iniciar sesión para mantener seguras las publicaciones, fotos y chats.\n\nTenemos tolerancia cero con el contenido objetable y los usuarios abusivos. El contenido reportado se revisa y elimina en 24 horas.' },
   button: { ko: '로그인 / 회원가입', en: 'Sign In / Sign Up', es: 'Entrar / Registrarse' },
   terms:  { ko: '이용약관 보기', en: 'View Terms of Use', es: 'Ver Términos de Uso' },
+  // 로그인했지만 공동체 미배정
+  unassignedTitle: { ko: '아직 공동체가 배정되지 않았습니다',
+                     en: 'You have not been placed in a community yet',
+                     es: 'Aún no se te ha asignado una comunidad' },
+  unassignedBody:  { ko: '목회자가 소속 공동체를 배정하면 이곳에서 우리 공동체의 모임·사진·채팅을 볼 수 있습니다.\n\n배정 요청은 목회자에게 직접 말씀해 주세요.',
+                     en: 'Once a pastor places you in a community, its gatherings, photos, and chat will appear here.\n\nPlease ask a pastor to assign you.',
+                     es: 'Cuando un pastor te asigne a una comunidad, aquí verás sus reuniones, fotos y chat.\n\nPídele a un pastor que te asigne.' },
 };
 
 export type CommunityItem = typeof COMMUNITIES[0];
@@ -97,8 +104,10 @@ export function getCommunityName(c: CommunityItem, lang: string) {
 
 export default function CommunityScreen({ navigation }: Props) {
   const { t, lang } = useLanguage();
-  const { user } = useAuth();
+  const { user, isPastor, communityId } = useAuth();
   const [postCounts, setPostCounts] = useState<Record<string, number>>({});
+  // 목사는 전체, 회원은 소속 공동체만 (서버 RLS 도 동일하게 막지만 목록에서도 숨긴다)
+  const visibleCommunities = isPastor ? COMMUNITIES : COMMUNITIES.filter((c) => c.id === communityId);
   const [loading, setLoading] = useState(true);
   const g: 'ko' | 'en' | 'es' = lang === 'ko' ? 'ko' : lang === 'es' ? 'es' : 'en';
 
@@ -142,7 +151,14 @@ export default function CommunityScreen({ navigation }: Props) {
         <View style={styles.backBtn} />
       </View>
 
-      {!user ? (
+      {user && !isPastor && !communityId ? (
+        /* ── 로그인했지만 공동체 미배정 ── */
+        <View style={styles.gateWrap}>
+          <Icon name="tab-community" size={56} tintColor={Colors.text.light} style={styles.gateEmoji} />
+          <Text style={styles.gateTitle}>{GATE.unassignedTitle[g]}</Text>
+          <Text style={styles.gateBody}>{GATE.unassignedBody[g]}</Text>
+        </View>
+      ) : !user ? (
         /* ── 로그인 게이트 (App Store Guideline 1.2) ── */
         <View style={styles.gateWrap}>
           <Icon name="more-privacy" size={56} tintColor={Colors.text.light} style={styles.gateEmoji} />
@@ -157,7 +173,7 @@ export default function CommunityScreen({ navigation }: Props) {
         </View>
       ) : (
       <FlatList
-        data={COMMUNITIES}
+        data={visibleCommunities}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}

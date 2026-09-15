@@ -19,6 +19,8 @@ interface AuthContextType {
   needsEulaAccept: boolean;
   isBanned: boolean;
   bannedReason: string | null;
+  /** 소속 공동체 id (목사/미배정은 null) */
+  communityId: string | null;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -37,6 +39,7 @@ const AuthContext = createContext<AuthContextType>({
   needsEulaAccept: false,
   isBanned: false,
   bannedReason: null,
+  communityId: null,
   signIn: async () => ({ error: null }),
   signUp: async () => ({ error: null }),
   signOut: async () => {},
@@ -50,16 +53,17 @@ interface ProfileData {
   eula_version: number;
   is_banned: boolean;
   banned_reason: string | null;
+  community_id: string | null;
 }
 
 async function fetchUserProfile(userId: string): Promise<ProfileData> {
-  const empty: ProfileData = { role: null, full_name: null, eula_version: 0, is_banned: false, banned_reason: null };
+  const empty: ProfileData = { role: null, full_name: null, eula_version: 0, is_banned: false, banned_reason: null, community_id: null };
 
   // Try full schema first (post-migration)
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('role, is_admin, full_name, eula_version, is_banned, banned_reason')
+      .select('role, is_admin, full_name, eula_version, is_banned, banned_reason, community_id')
       .eq('id', userId)
       .single();
     if (!error && data) {
@@ -72,6 +76,7 @@ async function fetchUserProfile(userId: string): Promise<ProfileData> {
         eula_version: (data as any).eula_version ?? 0,
         is_banned: (data as any).is_banned ?? false,
         banned_reason: (data as any).banned_reason ?? null,
+        community_id: (data as any).community_id ?? null,
       };
     }
   } catch { /* pre-migration schema — fall through */ }
@@ -101,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [needsEulaAccept, setNeedsEulaAccept] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
   const [bannedReason, setBannedReason] = useState<string | null>(null);
+  const [communityId, setCommunityId] = useState<string | null>(null);
 
   const isPastor = role === 'pastor';
   const isAdmin = isPastor;
@@ -113,6 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setNeedsEulaAccept(false);
       setIsBanned(false);
       setBannedReason(null);
+      setCommunityId(null);
       return;
     }
     // Set session immediately so login isn't blocked by the DB fetch
@@ -137,6 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsBanned(p.is_banned);
       setBannedReason(p.banned_reason);
       setNeedsEulaAccept(p.eula_version < CURRENT_EULA_VERSION);
+      setCommunityId(p.community_id);
     } catch {
       // profile fetch timed out — leave defaults; don't gate on EULA/ban
     }
@@ -163,6 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsBanned(p.is_banned);
       setBannedReason(p.banned_reason);
       setNeedsEulaAccept(p.eula_version < CURRENT_EULA_VERSION);
+      setCommunityId(p.community_id);
     }
   }
 
@@ -222,6 +231,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       needsEulaAccept,
       isBanned,
       bannedReason,
+      communityId,
       signIn,
       signUp,
       signOut,

@@ -5,6 +5,7 @@ export interface Profile {
   full_name: string;
   email?: string;
   role: UserRole;
+  community_id?: string | null;
   created_at: string;
 }
 
