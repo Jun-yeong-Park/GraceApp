@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Platform,
   TextInput,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -22,6 +24,9 @@ import { useLanguage } from '../context/LanguageContext';
 
 const FONT_SIZE_KEY = '@grace_bible_fontsize';
 const BOOKMARKS_KEY = '@grace_bible_bookmarks';
+const TTS_RATE_KEY  = '@grace_bible_tts_rate';
+const TTS_VOICE_KEY = '@grace_bible_tts_voice_'; // + 언어코드 (ko/en/es)
+const TTS_RATES = [0.75, 0.9, 1.0, 1.25, 1.5];
 
 // ── 오프라인 성경 데이터 ──────────────────────────────────────────────────────
 import gaeyeokData   from '../../bible.json';           // 개역개정  (키: 창1:1)
@@ -85,6 +90,16 @@ const UI: Record<string, Record<string, string>> = {
   prev:       { ko: '이전',              en: 'Prev',           es: 'Ant.'         },
   next:       { ko: '다음',              en: 'Next',           es: 'Sig.'         },
   playAll:    { ko: '전체 듣기',          en: 'Play All',       es: 'Reproducir'   },
+  voice:      { ko: '목소리',             en: 'Voice',          es: 'Voz'          },
+  voiceTitle: { ko: '읽어주는 목소리',     en: 'Reading Voice',  es: 'Voz de lectura' },
+  speed:      { ko: '속도',               en: 'Speed',          es: 'Velocidad'    },
+  systemDefault: { ko: '기기 기본 목소리', en: 'Device default voice', es: 'Voz predeterminada' },
+  enhanced:   { ko: '고품질',             en: 'Enhanced',       es: 'Mejorada'     },
+  moreVoices: { ko: '더 많은 목소리는 iOS 설정 → 손쉬운 사용 → 콘텐츠 말하기 → 음성에서 내려받을 수 있습니다.',
+                en: 'Download more voices in iOS Settings → Accessibility → Spoken Content → Voices.',
+                es: 'Descarga más voces en Ajustes → Accesibilidad → Contenido hablado → Voces.' },
+  preview:    { ko: '미리 듣기',          en: 'Preview',        es: 'Escuchar'     },
+  done:       { ko: '완료',               en: 'Done',           es: 'Listo'        },
   stop:       { ko: '정지',              en: 'Stop',           es: 'Detener'      },
 };
 
@@ -150,6 +165,13 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
   // ── 글자 크기, 북마크, 검색 ─────────────────────────────────────────────────
   const [fontSize, setFontSize] = useState(17);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+
+  // ── TTS 속도 · 목소리 ───────────────────────────────────────────────────────
+  const [ttsRate, setTtsRate] = useState(0.9);
+  const [voiceModal, setVoiceModal] = useState(false);
+  const [voices, setVoices] = useState<Speech.Voice[]>([]);
+  // 언어별 선택 목소리 identifier (없으면 기기 기본)
+  const [voiceByLang, setVoiceByLang] = useState<Record<string, string | undefined>>({});
   const [searchMode, setSearchMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -160,7 +182,26 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
     AsyncStorage.getItem(BOOKMARKS_KEY)
       .then(v => { if (v) setBookmarks(new Set(JSON.parse(v))); })
       .catch(() => {});
+    AsyncStorage.getItem(TTS_RATE_KEY)
+      .then(v => { const n = Number(v); if (v && TTS_RATES.includes(n)) setTtsRate(n); })
+      .catch(() => {});
+    Promise.all((['ko', 'en', 'es'] as const).map(l => AsyncStorage.getItem(TTS_VOICE_KEY + l)))
+      .then(([ko, en, es]) => setVoiceByLang({ ko: ko ?? undefined, en: en ?? undefined, es: es ?? undefined }))
+      .catch(() => {});
+    Speech.getAvailableVoicesAsync().then(setVoices).catch(() => {});
   }, []);
+
+  function cycleRate() {
+    const next = TTS_RATES[(TTS_RATES.indexOf(ttsRate) + 1) % TTS_RATES.length];
+    setTtsRate(next);
+    AsyncStorage.setItem(TTS_RATE_KEY, String(next));
+  }
+
+  function selectVoice(langCode: string, identifier: string | undefined) {
+    setVoiceByLang(prev => ({ ...prev, [langCode]: identifier }));
+    if (identifier) AsyncStorage.setItem(TTS_VOICE_KEY + langCode, identifier);
+    else AsyncStorage.removeItem(TTS_VOICE_KEY + langCode);
+  }
 
   function changeFontSize(delta: number) {
     const next = Math.max(12, Math.min(28, fontSize + delta));
@@ -235,12 +276,13 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
     setSpeakingVerse(verse.verse);
     Speech.speak(verse.text, {
       language: TTS_LANG[translation.lang],
-      rate: 0.9,
+      voice: voiceByLang[translation.lang],
+      rate: ttsRate,
       onDone: () => setSpeakingVerse(null),
       onError: () => setSpeakingVerse(null),
       onStopped: () => setSpeakingVerse(null),
     });
-  }, [speakingVerse, isPlayingAll, translation.lang, stopSpeech]);
+  }, [speakingVerse, isPlayingAll, translation.lang, stopSpeech, ttsRate, voiceByLang]);
 
   // 전체 장 순차 읽기
   const playAll = useCallback(async () => {
@@ -267,7 +309,8 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
       }
       Speech.speak(v.text, {
         language: TTS_LANG[translation.lang],
-        rate: 0.9,
+        voice: voiceByLang[translation.lang],
+        rate: ttsRate,
         onDone: () => speakNext(index + 1),
         onError: () => speakNext(index + 1),
         onStopped: () => {
@@ -279,7 +322,7 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
     };
 
     speakNext(0);
-  }, [isPlayingAll, verses, translation.lang, stopSpeech]);
+  }, [isPlayingAll, verses, translation.lang, stopSpeech, ttsRate, voiceByLang]);
 
   function goChapter(delta: number) {
     const next = chapter + delta;
@@ -337,6 +380,12 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
             <Text style={styles.fontSizeLabel}>{fontSize}</Text>
             <TouchableOpacity onPress={() => changeFontSize(1)} style={styles.fontBtn} hitSlop={6}>
               <Text style={styles.fontBtnText}>A+</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={cycleRate} style={[styles.fontBtn, { marginLeft: 6 }]} hitSlop={6}>
+              <Text style={styles.fontBtnText}>{ttsRate}×</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setVoiceModal(true)} style={styles.fontBtn} hitSlop={6}>
+              <Text style={styles.fontBtnText}>🔊 {lu('voice', appLang)}</Text>
             </TouchableOpacity>
           </View>
           {searchMode && (
@@ -463,6 +512,78 @@ export default function BibleChapterScreen({ navigation, route }: Props) {
         </TouchableOpacity>
       </View>
 
+      {/* ── 목소리 · 속도 선택 모달 ── */}
+      <Modal visible={voiceModal} animationType="slide" transparent onRequestClose={() => setVoiceModal(false)}>
+        <View style={styles.voiceOverlay}>
+          <View style={styles.voiceSheet}>
+            <View style={styles.voiceHeader}>
+              <Text style={styles.voiceTitle}>{lu('voiceTitle', appLang)}</Text>
+              <TouchableOpacity onPress={() => { Speech.stop(); setVoiceModal(false); }} hitSlop={8}>
+                <Text style={styles.voiceDone}>{lu('done', appLang)}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* 속도 */}
+            <Text style={styles.voiceSection}>{lu('speed', appLang)}</Text>
+            <View style={styles.rateRow}>
+              {TTS_RATES.map(r => (
+                <TouchableOpacity
+                  key={r}
+                  onPress={() => { setTtsRate(r); AsyncStorage.setItem(TTS_RATE_KEY, String(r)); }}
+                  style={[styles.rateChip, ttsRate === r && styles.rateChipActive]}
+                >
+                  <Text style={[styles.rateChipText, ttsRate === r && styles.rateChipTextActive]}>{r}×</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* 목소리 — 현재 번역본 언어에 맞는 것만 */}
+            <Text style={styles.voiceSection}>
+              {lu('voice', appLang)} · {translation.label}
+            </Text>
+            {(() => {
+              const langCode = translation.lang;
+              const list = voices
+                .filter(v => (v.language ?? '').toLowerCase().startsWith(langCode))
+                .sort((a, b) => (a.quality === 'Enhanced' ? -1 : 1) - (b.quality === 'Enhanced' ? -1 : 1) || a.name.localeCompare(b.name));
+              const selected = voiceByLang[langCode];
+              const sample = verses[0]?.text.slice(0, 60) ?? 'Hello';
+              const preview = (id?: string) => {
+                Speech.stop();
+                Speech.speak(sample, { language: TTS_LANG[langCode], voice: id, rate: ttsRate });
+              };
+              const row = (id: string | undefined, name: string, sub?: string) => (
+                <TouchableOpacity
+                  key={id ?? '__default'}
+                  style={[styles.voiceRow, selected === id && styles.voiceRowActive]}
+                  onPress={() => { selectVoice(langCode, id); preview(id); }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.voiceName, selected === id && styles.voiceNameActive]}>{name}</Text>
+                    {sub ? <Text style={styles.voiceSub}>{sub}</Text> : null}
+                  </View>
+                  <Text style={styles.voiceCheck}>{selected === id ? '✓' : ''}</Text>
+                </TouchableOpacity>
+              );
+              return (
+                <FlatList
+                  data={list}
+                  keyExtractor={v => v.identifier}
+                  style={{ maxHeight: 320 }}
+                  ListHeaderComponent={row(undefined, lu('systemDefault', appLang))}
+                  renderItem={({ item }) => row(
+                    item.identifier,
+                    item.name,
+                    [item.quality === 'Enhanced' ? lu('enhanced', appLang) : null, item.language].filter(Boolean).join(' · '),
+                  )}
+                  ListFooterComponent={<Text style={styles.voiceHint}>{lu('moreVoices', appLang)}</Text>}
+                />
+              );
+            })()}
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -576,6 +697,26 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.border,
   },
   fontSizeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+
+  // 목소리·속도 모달
+  voiceOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  voiceSheet: { backgroundColor: Colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 36 },
+  voiceHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  voiceTitle: { fontSize: 17, fontWeight: '800', color: Colors.primary },
+  voiceDone: { fontSize: 15, fontWeight: '700', color: Colors.primary },
+  voiceSection: { fontSize: 12, fontWeight: '700', color: Colors.text.secondary, letterSpacing: 0.6, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 },
+  rateRow: { flexDirection: 'row', gap: 8 },
+  rateChip: { flex: 1, paddingVertical: 9, borderRadius: 10, borderWidth: 1, borderColor: Colors.border, alignItems: 'center', backgroundColor: Colors.background },
+  rateChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  rateChipText: { fontSize: 13, fontWeight: '700', color: Colors.text.secondary },
+  rateChipTextActive: { color: Colors.white },
+  voiceRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10, marginBottom: 4 },
+  voiceRowActive: { backgroundColor: Colors.primary + '12' },
+  voiceName: { fontSize: 15, fontWeight: '600', color: Colors.text.primary },
+  voiceNameActive: { color: Colors.primary },
+  voiceSub: { fontSize: 12, color: Colors.text.light, marginTop: 2 },
+  voiceCheck: { fontSize: 16, fontWeight: '800', color: Colors.primary, width: 20, textAlign: 'right' },
+  voiceHint: { fontSize: 12, color: Colors.text.light, lineHeight: 17, marginTop: 10, paddingHorizontal: 4 },
   fontBtn: {
     paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: 6, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.background,
