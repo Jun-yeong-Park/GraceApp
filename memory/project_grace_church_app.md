@@ -68,6 +68,19 @@ Demo account passwords: member@gracechurch.app / `gracemember2026` (reset via
 `extensions.crypt` — the documented GraceMember2026! had never actually been set;
 last_sign_in_at was NULL). Pastor: reviewer@gracechurch.app / GraceReview2026!.
 
+**2026-09-15/10-03 — 이후 작업 (상세는 리포 루트 CLAUDE.md 가 최신 기준).**
+- 공동체 접근 제한: `profiles.community_id` + `my_community_id()` + RLS 로 회원은 소속 공동체
+  콘텐츠만(목사 전체). `supabase_community_access.sql` **적용 완료**, 타 공동체 INSERT 403 확인.
+- 가입 승인 메일: `signup_approvals` 토큰 → `notify-signup` → 메일의 승인/거절 버튼 →
+  `approve-signup`. **SQL 미적용 + Edge 미배포.**
+- 예배 탭 최신 설교 자동: `latest-sermon` Edge Function 이 교회 채널
+  (UCvwg_D00trsBEjWha8JkacA) Atom 피드 파싱. **미배포.** RSS 는 이 머신에서 404 라 엣지에서 가져온다.
+- 성경 TTS: 목소리 선택(언어별 저장) + 속도 0.75~1.5×. 무음 스위치 대응은 expo-audio
+  `playsInSilentMode` — **실기기 확인 미완.**
+- 브릿지 공동체 아이콘을 홈페이지 로고(sunlight-church/public/icons/bridge.png)에서 추출.
+- 버전 1.1.0 (출시된 1.0.3 번호로는 재제출 불가). 마지막 TestFlight 는 1.0.3 b15.
+- CocoaPods 설치 불가(Ruby 2.6) → 로컬 네이티브 빌드 불가, EAS preview(simulator) 로 확인.
+
 **2026-09-12 — 기능 전수 점검 + 아이콘 (build 14, functional-fixes → main).**
 데모 계정 REST 로 실제 호출해 검증. 안 되던 것 8건 수정(댓글·채팅 즉시표시, 봉사신청 저장, 가입승인 탭,
 실제 계정삭제, 푸시알림, 헌금정보 표시+홈 진입점, 설교링크 관리, TTS 무음스위치). 시뮬레이터(EAS preview

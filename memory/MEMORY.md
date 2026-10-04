@@ -1,2 +1,3 @@
-- [User: Jay (Grace Church dev)](user_role.md) — solo dev, wants copy-paste deploy steps not abstract advice
-- [Project: Grace Church App](project_grace_church_app.md) — Expo RN + Supabase church app; Apple 1.2 UGC rejected twice (Aug 14 2026); **App Store 승인 2026-09-11** (v1.0.3 b12); 데모 콘텐츠 정리·Resend 키 교체 등 후속 작업 목록 있음 (see APPLE_1_2_SUBMISSION.md)
+- **먼저 리포 루트의 `CLAUDE.md` 를 읽을 것** — 환경 제약·명령어·현재 할 일이 전부 거기 있다.
+- [User: Jay (Grace Church dev)](user_role.md) — 솔로 개발자, 복붙 가능한 명령/SQL 선호, 비밀값을 채팅에 붙이는 경향
+- [Project: Grace Church App](project_grace_church_app.md) — Expo RN + Supabase; Apple 1.2 리젝 2회 후 2026-09-11 승인(v1.0.3 b12); 2026-09-12 기능 전수수정+아이콘; 2026-09-15 가입승인 메일·공동체 접근제한 추가(일부 미배포)
